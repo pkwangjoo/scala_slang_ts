@@ -6,23 +6,29 @@ type BinaryOperation = {
     operator : string
 }
 
+type LambdaExpr = {
+    names : string[]
+    body : BlockStat | Expression
+}
+
 type AssignmentStat = {
     name : string
     expr: Expression
 }
 
-type FunctionDefState = {
+type FunctionDefStat = {
     name: string
-    body: BlockStat | Statement;
+    lambda: LambdaExpr
 }
 
 type BlockStat = {
     stmts: Statement
 }
 
+
 type Statement = 
       AssignmentStat 
-    | FunctionDefState 
+    | FunctionDefStat
     | Expression
     | BlockStat
 

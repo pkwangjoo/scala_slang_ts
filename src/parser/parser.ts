@@ -12,6 +12,10 @@ def hello (a, b, c) = {
     a + b;
 }
 
+val lf = (a, b, c) => {
+    a + b;
+};
+
 `
 
 let inputStream = new ANTLRInputStream(test_case);

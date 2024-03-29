@@ -19,6 +19,7 @@ expr:   expr op=BINOP expr
     |   INT                    
     |   ID                    
     |   '(' expr ')'         
+    |   '(' names ')' '=>' (block | expr)
     ;
 
 ID  :   [a-zA-Z]+ ;      // match identifiers <label id="code.tour.expr.3"/>
