@@ -2,21 +2,9 @@ import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
 import { ScalaSlangLexer } from "./ScalaSlangLexer";
 import { ScalaSlangParser } from "./ScalaSlangParser";
 
-const test_case = `
+import { test_case } from "../tests/parser-test";
 
-val a = 4; val c = 4; 
-val b = 5;
-val ab = a + b;
 
-def hello (a, b, c) = {
-    a + b;
-}
-
-val lf = (a, b, c) => {
-    a + b;
-};
-
-`
 
 let inputStream = new ANTLRInputStream(test_case);
 let lexer = new ScalaSlangLexer(inputStream);

@@ -25,6 +25,15 @@ type BlockStat = {
     stmts: Statement
 }
 
+type IfStat = {
+    pred: Expression
+    conseq: Expression
+    alt: Expression
+}
+
+
+
+
 
 type Statement = 
       AssignmentStat 
