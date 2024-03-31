@@ -64,4 +64,4 @@ type DONE = {
   tag: "DONE"
 }
 
-type Instruction = LDC | LD | UNOP | BINOP | JOF | GOTO;
+type Instruction = LDC | LD | UNOP | BINOP | JOF | GOTO | CALL | ASSIGN | LDF | RESET | ENTER_SCOPE | EXIT_SCOPE | TAIL_CALL | DONE
