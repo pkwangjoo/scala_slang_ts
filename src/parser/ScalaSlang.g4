@@ -3,17 +3,18 @@ grammar ScalaSlang;
 /** The start rule; begin parsing here. */
 prog:   stat+ EOF; 
 
-stat:   'val' ID '=' expr ';'
-    |   'def' ID '(' names ')' '=' block
-    |   expr ';'
-    |   block
-    |   ifstat
+stat:   'val' name=ID '=' expr ';'              #assignstat
+    |   'def' name=ID '(' names ')' '=' block   #fundefstat
+    |   expr ';'                                #exprstat
+    |   block                                   #blockstat
+    |   ifstat                                  #ifstat
     ;
 
 block: '{' stat+ '}'
     ;
 
-ifstat: 'if' expr block ('else' (block | ifstat))?
+ifstat: 'if' expr block                         
+        ('else' (block | ifstat))?
     ;
 
 
@@ -23,13 +24,13 @@ names:  ID | (ID (',' ID)*)
 exprs:  expr | (expr (',' expr)*)
     ;
 
-expr:   expr op=BINOP expr 
-    |   INT                    
-    |   ID                    
-    |   '(' expr ')'         
-    |   '(' names ')' '=>' (block | expr)
-    |   expr '(' exprs ')'
-    |   expr '?' expr ':' expr
+expr:   expr op=BINOP expr                      #binopexpr 
+    |   INT                                     #intlitexpr
+    |   ID                                      #stringlitexpr 
+    |   '(' expr ')'                            #paranexpr 
+    |   '(' names ')' '=>' (block | expr)       #lambdaexpr
+    |   expr '(' exprs ')'                      #funappexpr
+    |   expr '?' expr ':' expr                  #condexpr
     ;
 
 

@@ -1,4 +1,11 @@
 
+type StringLit = {
+    val : string
+}
+
+type intLit = {
+    val : number
+}
 
 type BinaryOperation = {
     operand1 : Expression
@@ -22,7 +29,7 @@ type FunctionDefStat = {
 }
 
 type BlockStat = {
-    stmts: Statement
+    stmts: Sequence | Statement
 }
 
 type IfStat = {
@@ -31,8 +38,9 @@ type IfStat = {
     alt: Expression
 }
 
-
-
+type Sequence = {
+    stmts: Statement[];
+}
 
 
 type Statement = 
@@ -42,8 +50,11 @@ type Statement =
     | BlockStat
 
 
-type Expression = BinaryOperation;
+type Expression = 
+      BinaryOperation
+    | StringLit
+    | intLit;
 
 
 
-type AstNode = Expression | Statement;
+type AstNode = Expression | Statement | Sequence;
