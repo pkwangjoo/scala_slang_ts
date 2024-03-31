@@ -7,13 +7,13 @@ stat:   'val' name=ID '=' expr ';'              #assignstat
     |   'def' name=ID '(' names ')' '=' block   #fundefstat
     |   expr ';'                                #exprstat
     |   block                                   #blockstat
-    |   ifstat                                  #ifstat
+    |   ifstat                                  #ifstatement
     ;
 
 block: '{' stat+ '}'
     ;
 
-ifstat: 'if' expr block                         
+ifstat  : 'if' expr block                         
         ('else' (block | ifstat))?
     ;
 
@@ -25,11 +25,11 @@ exprs:  expr | (expr (',' expr)*)
     ;
 
 expr:   expr op=BINOP expr                      #binopexpr 
-    |   INT                                     #intlitexpr
-    |   ID                                      #stringlitexpr 
+    |   INT                                     #intlit
+    |   ID                                      #stringlit 
     |   '(' expr ')'                            #paranexpr 
     |   '(' names ')' '=>' (block | expr)       #lambdaexpr
-    |   expr '(' exprs ')'                      #funappexpr
+    |   expr '(' exprs ')'                      #funapp
     |   expr '?' expr ':' expr                  #condexpr
     ;
 
