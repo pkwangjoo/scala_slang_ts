@@ -1,9 +1,9 @@
 
-type StringLit = {
-    val : string
+type Name = {
+    sym: string;
 }
 
-type intLit = {
+type IntLit = {
     val : number
 }
 
@@ -16,6 +16,12 @@ type BinaryOperation = {
 type LambdaExpr = {
     names : string[]
     body : BlockStat | Expression
+}
+
+type CondExpr = {
+    pred : Expression // must be logical expression
+    conseq: Expression
+    alt: Expression
 }
 
 type AssignmentStat = {
@@ -52,9 +58,12 @@ type Statement =
 
 type Expression = 
       BinaryOperation
-    | StringLit
-    | intLit;
+    | Name
+    | IntLit
+    | CondExpr;
 
+type EmptyNode = {}
 
+type TerminalNode = {}
 
-type AstNode = Expression | Statement | Sequence;
+type AstNode = Expression | Statement | Sequence | EmptyNode;

@@ -19,3 +19,11 @@ def hello (a, b, c) = {
 
 
 `
+
+export const test_case_2 = `
+a;
+b;
+a ? b : c;
+a + b;
+
+`

@@ -25,8 +25,8 @@ exprs:  expr | (expr (',' expr)*)
     ;
 
 expr:   expr op=BINOP expr                      #binopexpr 
-    |   INT                                     #intlit
-    |   ID                                      #stringlit 
+    |   val=INT                                     #intlit
+    |   name=ID                                      #name 
     |   '(' expr ')'                            #paranexpr 
     |   '(' names ')' '=>' (block | expr)       #lambdaexpr
     |   expr '(' exprs ')'                      #funapp
