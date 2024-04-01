@@ -98,7 +98,7 @@ export class ScalaSlangVisitorInstance
         } 
     }
 
-    visitBinopexpr(ctx: BinopexprContext): BinaryOperation {
+    visitBinopexpr(ctx: BinopexprContext): BinopExpr {
         const fst = ctx.expr(0);
         const scnd = ctx.expr(1);
         const operator = ctx._op.text!;

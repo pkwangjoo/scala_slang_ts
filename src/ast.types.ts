@@ -9,7 +9,7 @@ type IntLit = {
     val : number
 }
 
-type BinaryOperation = {
+type BinopExpr = {
     kind: "binop"
     operand1 : Expression
     operand2 : Expression
@@ -70,7 +70,7 @@ type Statement =
 
 
 type Expression = 
-      BinaryOperation
+      BinopExpr
     | Name
     | IntLit
     | CondExpr;
