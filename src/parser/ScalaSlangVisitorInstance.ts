@@ -10,12 +10,12 @@ export class ScalaSlangVisitorInstance
 
 
     protected defaultResult(): AstNode {
-        // throw new Error("Method not implemented.");
-        return {} as EmptyNode
+        throw new Error("Method not implemented.");
+
     }
 
     visitTerminal(node: TerminalNode): AstNode {
-        return node.text;
+        throw new Error("Method not implemented.");
     }
 
     visitProg(ctx: ProgContext) : Sequence {
@@ -38,7 +38,7 @@ export class ScalaSlangVisitorInstance
 
     visitFundefstat(ctx: FundefstatContext) : FunctionDefStat {
         const name = ctx._name.text;
-        const params = this.visit(ctx.names());
+        const params = ctx.names().ID().map(n => n.text)
         const body = this.visit(ctx.block()) as BlockStat;
         const lambdaExpr = {
             kind: "lambda",
@@ -51,12 +51,6 @@ export class ScalaSlangVisitorInstance
             name, 
             lambda: lambdaExpr
         } as FunctionDefStat
-    }
-
-    visitNames(ctx: NamesContext) : AstNode {
-        const names = ctx.ID().map(i => i.text);
-        return names;
-
     }
 
     visitExprstat(ctx: ExprstatContext) : Expression {
@@ -72,7 +66,10 @@ export class ScalaSlangVisitorInstance
         const stmts = ctx.getRuleContexts(StatContext).map(r => this.visit(r) as Statement);
         return {
             kind: "block",
-            stmts
+            body: {
+                kind : "seq",
+                stmts
+            }
         }
     }
 
@@ -85,7 +82,7 @@ export class ScalaSlangVisitorInstance
                 kind: "ifstat",
                 pred,
                 conseq,
-                alt: this.visit(ctx.ifstat()!) as IfStat
+                alt: this.visitIfstat(ctx.ifstat()!) 
             }
         }
 
@@ -138,7 +135,7 @@ export class ScalaSlangVisitorInstance
 
         return {
             kind: "lambda",
-            params: this.visit(ctx.names()),
+            params: ctx.names().ID().map(n => n.text),
             body
         } as LambdaExpr
     }

@@ -46,7 +46,7 @@ type FunctionDefStat = {
 
 type BlockStat = {
     kind: "block"
-    stmts: Statement[] 
+    body: Sequence
 }
 
 type IfStat = {
@@ -67,16 +67,23 @@ type Statement =
     | FunctionDefStat
     | Expression
     | BlockStat
+    | IfStat
 
 
 type Expression = 
       BinopExpr
     | Name
     | IntLit
-    | CondExpr;
+    | CondExpr
+    | LambdaExpr;
 
-type EmptyNode = {}
+type EmptyNode = {
+    kind: "empty"
+}
 
-type TerminalNode = {}
+type TerminalNode = {
+    kind: "terminal"
+    sym: string
+}
 
-type AstNode = Expression | Statement | Sequence | EmptyNode;
+type AstNode = Expression | Statement | Sequence 

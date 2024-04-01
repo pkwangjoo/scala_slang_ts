@@ -1,11 +1,12 @@
 type LDC = {
   kind: "LDC"
-  val: number
+  val: number | undefined
 }
 
 type LD = {
   kind: "LD"
   sym: string
+  pos: [number, number]
 }
 
 type UNOP = {
@@ -15,15 +16,17 @@ type UNOP = {
 
 type BINOP = {
   kind: "BINOP"
-  sym: string
+  operator : string
 }
 
 type JOF = {
   kind: "JOF"
+  addr: number
 }
 
 type GOTO = {
   kind: "GOTO"
+  addr: number
 }
 
 type CALL = {
@@ -34,6 +37,7 @@ type CALL = {
 type ASSIGN = {
   kind: "ASSIGN"
   sym: string
+  pos: [number, number]
 }
 
 type LDF = {
