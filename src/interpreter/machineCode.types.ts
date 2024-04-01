@@ -15,11 +15,9 @@ type BINOP = {
 }
 
 type JOF = {
-  tag: "JOF",
 }
 
 type GOTO = {
-  tag: "GOTO",
 }
 
 type CALL = {
