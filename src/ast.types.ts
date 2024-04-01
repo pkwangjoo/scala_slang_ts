@@ -81,9 +81,9 @@ type EmptyNode = {
     kind: "empty"
 }
 
-type TerminalNode = {
+type TerminalAstNode = {
     kind: "terminal"
     sym: string
 }
 
-type AstNode = Expression | Statement | Sequence 
+type AstNode = Expression | Statement | Sequence | TerminalAstNode

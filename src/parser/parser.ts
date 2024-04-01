@@ -19,8 +19,5 @@ let tree = parser.prog();
 
 let visitor = new ScalaSlangVisitorInstance();
 
-let ast = visitor.visit(tree);
+export const ast = visitor.visit(tree);
 
-console.log(ast);
-
-console.log(tree.toStringTree(parser));

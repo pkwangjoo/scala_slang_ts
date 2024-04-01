@@ -4,14 +4,22 @@ type Environment = {
     frames: Frame[]
 }
 
-const instrs: Instruction[] = [];
+let instrs: Instruction[] = [];
 let wc = 0;
 
 type CompileFunction = (comp: any, ce: any) => void;
 
+const push = (array:any, ...items: any) => {
+    // fixed by Liew Zhao Wei, see Discussion 5
+    for (let item of items) {
+        array.push(item)
+    }
+    return array 
+}
+
 const compile_time_environment_extend = (vs : any, e : any) => {
     //  make shallow copy of e
-    return [...e, ...vs];
+    return push([...e], vs)
 }
 
 const value_index = (frame: any, x: any) => {
@@ -22,6 +30,7 @@ const value_index = (frame: any, x: any) => {
   }
 
 const compile_time_environment_position = (env: any, x: any) : [number, number] => {
+    console.log(`searching fro ${x} in ${env}`)
     let frame_index = env.length
     while (value_index(env[--frame_index], x) === -1) {}
     return [frame_index, 
@@ -29,12 +38,23 @@ const compile_time_environment_position = (env: any, x: any) : [number, number] 
 }
 
 const scan = (comp: any) => 
-    comp.tag === 'seq'
+    comp.kind === 'seq'
     ? comp.stmts.reduce((acc : any, x : any) => acc.concat(scan(x)),
                         [])
-    : ['let', 'const', 'fun'].includes(comp.tag)
-    ? [comp.sym]
+    : ["assign"].includes(comp.kind)
+    ? [comp.name]
     : []
+
+const compile_sequence = (seq: Sequence, ce: any) => {
+    if (seq.stmts.length === 0) 
+        return instrs[wc++] = {kind: "LDC", val: undefined}
+    let first = true
+    for (let comp of seq.stmts) {
+        first ? first = false
+                : instrs[wc++] = {kind: 'POP'}
+        compile(comp, ce)
+    }
+}
 
 interface CompileFunctions {
     intlit: (comp: IntLit, ce: any) => void;
@@ -109,6 +129,7 @@ const compile_comp: CompileFunctions = {
     block:
         (comp : BlockStat, ce : any) => {
             const locals = scan(comp.body)
+            console.log(locals)
             instrs[wc++] = {kind: 'ENTER_SCOPE', syms: locals.length}
             compile(comp.body,
                     // extend compile-time environment
@@ -123,13 +144,40 @@ const compile_comp: CompileFunctions = {
 };
 
 
-const compile = (comp: AstNode, env : any) => {
-
-    
-
-
-
+const compile = (comp: AstNode, env: any) => {
+    console.log(comp)
+    if (comp.kind === 'intlit') {
+        compile_comp[comp.kind](comp as IntLit, env);
+    } else if (comp.kind === 'name') {
+        compile_comp[comp.kind](comp as Name, env);
+    } else if (comp.kind === 'assign') {
+        compile_comp[comp.kind](comp as AssignmentStat, env);
+    } else if (comp.kind === 'binop') {
+        compile_comp[comp.kind](comp as BinopExpr, env);
+    } else if (comp.kind === 'block') {
+        compile_comp[comp.kind](comp as BlockStat, env);
+    } else if (comp.kind === 'cond') {
+        compile_comp[comp.kind](comp as CondExpr, env);
+    } else if (comp.kind === 'fundef') {
+        compile_comp[comp.kind](comp as FunctionDefStat, env);
+    } else if (comp.kind === 'ifstat') {
+    } else if (comp.kind === 'lambda') {
+        compile_comp[comp.kind](comp as LambdaExpr, env);
+    } else if (comp.kind == "seq"){
+        compile_sequence(comp as Sequence, env)
+    } else if (comp.kind == "terminal" && comp.sym === "<EOF>") {
+        instrs[wc] = {kind: "DONE"}
+    } else {
+        throw new Error("unknown componenet")    
+    }
 
 
 }
 
+export const compileIntoVML = (ast : AstNode) => {
+    instrs = []
+    const mainBlock: BlockStat = {kind : "block", body: ast as Sequence}
+    compile(mainBlock, []);
+    return instrs;
+
+}

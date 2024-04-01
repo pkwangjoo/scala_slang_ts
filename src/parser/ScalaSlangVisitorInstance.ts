@@ -10,12 +10,11 @@ export class ScalaSlangVisitorInstance
 
 
     protected defaultResult(): AstNode {
-        throw new Error("Method not implemented.");
-
+        throw new Error("not implemented")
     }
 
     visitTerminal(node: TerminalNode): AstNode {
-        throw new Error("Method not implemented.");
+       return {kind: "terminal", sym: node.text} 
     }
 
     visitProg(ctx: ProgContext) : Sequence {
