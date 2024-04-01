@@ -25,5 +25,41 @@ a;
 b;
 a ? b : c;
 a + b;
+if a {
+    b;
+} else {
+    if c {
+        d;
+    } else {
+        p;
+    }
+}
+if a {
+    aa;
+} else if b{
+    ba;
+} else {
+    ca;
+}
+
+`
+
+export const test_case_3 = `
+def hello(a, b, c) = {
+    if a {
+        b;
+    } else {
+        c;
+    }
+}
+
+`
+
+export const test_case_4 = `
+val hello = (a, b, c) => {
+    a;
+};
+
+val helloexpr = (a, b, c) => a;
 
 `

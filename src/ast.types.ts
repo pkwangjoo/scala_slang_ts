@@ -14,7 +14,7 @@ type BinaryOperation = {
 }
 
 type LambdaExpr = {
-    names : string[]
+    params : string[]
     body : BlockStat | Expression
 }
 
@@ -35,13 +35,13 @@ type FunctionDefStat = {
 }
 
 type BlockStat = {
-    stmts: Sequence | Statement
+    stmts: Statement[] 
 }
 
 type IfStat = {
     pred: Expression
-    conseq: Expression
-    alt: Expression
+    conseq: BlockStat
+    alt: BlockStat | IfStat
 }
 
 type Sequence = {
