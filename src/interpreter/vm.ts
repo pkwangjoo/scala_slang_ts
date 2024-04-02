@@ -116,6 +116,10 @@ class VirtualMachine {
       );
       this.programCounter = newProgramCounter;
     }
+    if (instruction.kind === "ASSIGN") {
+      const val = this.operandStack[this.operandStack.length - 1]
+      this.mem.heapSetEnvironmentValue(this.environment, instruction.pos, val);
+    }
     throw new Error("Not implemented");
   }
 }
