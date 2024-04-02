@@ -164,7 +164,7 @@ class MemoryManager {
     return address
   }
 
-  heap_allocate_Callframe(env: number, pc: number): number {
+  heapAllocateCallframe(env: number, pc: number): number {
     const address = this.heapAllocate(MemoryManager.Callframe_tag, 2)
     this.heapSet2BytesAtOffset(address, 2, pc)
     this.heapSet(address + 1, env)
@@ -233,7 +233,7 @@ class MemoryManager {
     return this.getTag(address) === MemoryManager.Number_tag
   }
 
-  address_to_TS_value = (x: number): any => {
+  addressToTsValue = (x: number): any => {
     if (this.isBoolean(x)) {
         return this.isTrue(x) ? true : false;
     } else if (this.isNumber(x)) {
@@ -255,7 +255,7 @@ class MemoryManager {
     }
 };
 
-TS_value_to_address = (x: any): number => {
+TsValueToAddress = (x: any): number => {
     if (typeof x === "boolean") {
         return x ? this.True : this.False;
     } else if (typeof x === "number") {

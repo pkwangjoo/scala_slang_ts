@@ -99,6 +99,23 @@ class VirtualMachine {
     if (instruction.kind === "GOTO") {
       this.programCounter = instruction.addr;
     }
+    if (instruction.kind === "CALL") {
+      const arity = instruction.arity;
+      const fun = this.operandStack.slice(-arity - 1)[0];
+      // TODO: handle any built-in functions
+      const newProgramCounter = this.mem.heapGetClosurePc(fun);
+      const newFrame = this.mem.heapAllocateFrame(arity);
+      for (let i = arity - 1; i >= 0; i--) {
+        this.mem.heapSetChild(newFrame, i, this.operandStack.pop());
+      }
+      this.operandStack.pop(); // pop the function
+      this.runtimeStack.push(this.mem.heapAllocateCallframe(this.environment, this.programCounter));
+      this.environment = this.mem.heapEnvironmentExtend(
+        newFrame,
+        this.mem.heapGetClosureEnvironment(fun)
+      );
+      this.programCounter = newProgramCounter;
+    }
     throw new Error("Not implemented");
   }
 }
