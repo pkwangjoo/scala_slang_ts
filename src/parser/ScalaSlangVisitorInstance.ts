@@ -10,7 +10,13 @@ export class ScalaSlangVisitorInstance
 
 
     protected defaultResult(): AstNode {
-        return {};
+        return {
+          kind: "block",
+          body: {
+            kind: "seq",
+            stmts: []
+        }
+      }
     }
 
     visitTerminal(node: TerminalNode): AstNode {
