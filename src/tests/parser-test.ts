@@ -62,4 +62,12 @@ val hello = (a, b, c) => {
 
 val helloexpr = (a, b, c) => a;
 
+def helloFn(a, b, c) = {
+    if a {
+        b;
+    } else {
+        c;
+    }
+}
+
 `

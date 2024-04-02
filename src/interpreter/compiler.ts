@@ -41,7 +41,7 @@ const scan = (comp: any) =>
     comp.kind === 'seq'
     ? comp.stmts.reduce((acc : any, x : any) => acc.concat(scan(x)),
                         [])
-    : ["assign"].includes(comp.kind)
+    : ["assign", "fundef"].includes(comp.kind)
     ? [comp.name]
     : []
 
@@ -60,13 +60,12 @@ interface CompileFunctions {
     intlit: (comp: IntLit, ce: any) => void;
     name: (comp: Name, ce: any) => void;
     binop: (comp: BinopExpr, ce: any) => void;
-    cond: (comp: CondExpr, ce: any) => void;
+    cond: (comp: CondExpr | IfStat, ce: any) => void;
     assign: (comp: AssignmentStat, ce: any) => void;
     lambda: (comp: LambdaExpr, ce: any) => void;
     block: (comp: BlockStat, ce: any) => void;
     fundef: (comp: FunctionDefStat, ce: any) => void;
-    seq : () => void
-    ifstat: () => void
+    seq : (comp: Sequence, ce: any) => void
   }
 
 
@@ -89,7 +88,7 @@ const compile_comp: CompileFunctions = {
             instrs[wc++] = { kind : 'BINOP' , operator: comp.operator};
         },
     cond: 
-        (comp: CondExpr, ce: any) => {
+        (comp: CondExpr | IfStat, ce: any) => {
             compile(comp.pred, ce)
             const slot_for_JOF = wc++;
             compile(comp.conseq, ce)
@@ -137,9 +136,19 @@ const compile_comp: CompileFunctions = {
                         locals, ce))     
             instrs[wc++] = {kind: 'EXIT_SCOPE'}
         },
-    seq : () => {},
-    fundef: () => {},
-    ifstat: () => {}
+    seq : (comp : Sequence, ce : any) => {
+        compile_sequence(comp, ce);
+    },
+    fundef: (comp: FunctionDefStat, ce: any) => {
+        const {name} = comp;
+        const assignStat: AssignmentStat = {
+            kind: "assign",
+            name,
+            expr: comp.lambda
+        }
+
+        compile(assignStat, ce);
+    },
         
 };
 
@@ -161,10 +170,12 @@ const compile = (comp: AstNode, env: any) => {
     } else if (comp.kind === 'fundef') {
         compile_comp[comp.kind](comp as FunctionDefStat, env);
     } else if (comp.kind === 'ifstat') {
+        // we treat ifstat and condExpr as the same
+        compile_comp["cond"](comp as IfStat, env);
     } else if (comp.kind === 'lambda') {
         compile_comp[comp.kind](comp as LambdaExpr, env);
     } else if (comp.kind == "seq"){
-        compile_sequence(comp as Sequence, env)
+        compile_comp[comp.kind](comp as Sequence, env);
     } else if (comp.kind == "terminal" && comp.sym === "<EOF>") {
         instrs[wc] = {kind: "DONE"}
     } else {

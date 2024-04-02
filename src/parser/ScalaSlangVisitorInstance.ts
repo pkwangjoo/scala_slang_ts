@@ -10,7 +10,7 @@ export class ScalaSlangVisitorInstance
 
 
     protected defaultResult(): AstNode {
-        throw new Error("not implemented")
+        return {};
     }
 
     visitTerminal(node: TerminalNode): AstNode {
