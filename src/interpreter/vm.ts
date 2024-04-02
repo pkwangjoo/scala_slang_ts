@@ -120,6 +120,23 @@ class VirtualMachine {
       const val = this.operandStack[this.operandStack.length - 1]
       this.mem.heapSetEnvironmentValue(this.environment, instruction.pos, val);
     }
+    if (instruction.kind === "LDF") {
+      const closureAddress = this.mem.heapAllocateClosure(
+        instruction.prms.length,
+        instruction.addr,
+        this.environment
+      );
+      this.operandStack.push(closureAddress);
+    }
+    if (instruction.kind === "RESET") {
+      const topFrame = this.runtimeStack.pop();
+      if (this.mem.isCallframe(topFrame)) {
+        this.programCounter = this.mem.heapGetCallframePc(topFrame);
+        this.environment = this.mem.heapGetCallframeEnvironment(topFrame);
+      } else {
+        this.programCounter--;
+      }
+    }
     throw new Error("Not implemented");
   }
 }
