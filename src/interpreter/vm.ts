@@ -91,6 +91,11 @@ class VirtualMachine {
         this.applyBinop(instruction.operator, this.operandStack.pop(), this.operandStack.pop())
       );
     }
+    if (instruction.kind === "JOF") {
+      if (this.operandStack.pop() === MemoryManager.True_tag) {
+        this.programCounter = instruction.addr;
+      }
+    }
     throw new Error("Not implemented");
   }
 }
