@@ -96,6 +96,9 @@ class VirtualMachine {
         this.programCounter = instruction.addr;
       }
     }
+    if (instruction.kind === "GOTO") {
+      this.programCounter = instruction.addr;
+    }
     throw new Error("Not implemented");
   }
 }
