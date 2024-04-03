@@ -30,7 +30,6 @@ const value_index = (frame: any, x: any) => {
   }
 
 const compile_time_environment_position = (env: any, x: any) : [number, number] => {
-    console.log(`searching fro ${x} in ${env}`)
     let frame_index = env.length
     while (value_index(env[--frame_index], x) === -1) {}
     return [frame_index, 
@@ -128,7 +127,6 @@ const compile_comp: CompileFunctions = {
     block:
         (comp : BlockStat, ce : any) => {
             const locals = scan(comp.body)
-            console.log(locals)
             instrs[wc++] = {kind: 'ENTER_SCOPE', syms: locals.length}
             compile(comp.body,
                     // extend compile-time environment
@@ -154,7 +152,6 @@ const compile_comp: CompileFunctions = {
 
 
 const compile = (comp: AstNode, env: any) => {
-    console.log(comp)
     if (comp.kind === 'intlit') {
         compile_comp[comp.kind](comp as IntLit, env);
     } else if (comp.kind === 'name') {
