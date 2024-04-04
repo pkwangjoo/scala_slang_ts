@@ -1,6 +1,6 @@
 
 import { TerminalNode } from "antlr4ts/tree/TerminalNode";
-import { AbsTypeDefContext, AssignstatContext, BAbsTypeDefContext, BSimpleTypeDefContext, BinopexprContext, BlockContext, BlockstatContext, BparanTypeDefContext, CondexprContext, ExprContext, ExprstatContext, FundefstatContext, IfstatContext, IntlitContext, LambdaexprContext, NameContext, NamesContext, ParanTypeDefContext, ParanexprContext, ProgContext, SimpleTypeDefContext, StatContext, TypeDefContext } from "./ScalaSlangParser";
+import { AbsTypeDefContext, AssignstatContext, BAbsTypeDefContext, BSimpleTypeDefContext, BinopexprContext, BlockContext, BlockstatContext, BparanTypeDefContext, CondexprContext, ExprContext, ExprstatContext, FunappContext, FundefstatContext, IfstatContext, IntlitContext, LambdaexprContext, NameContext, NamesContext, ParanTypeDefContext, ParanexprContext, ProgContext, SimpleTypeDefContext, StatContext, TypeDefContext } from "./ScalaSlangParser";
 import { ScalaSlangVisitor } from "./ScalaSlangVisitor";
 import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor'
 
@@ -165,6 +165,19 @@ export class ScalaSlangVisitorInstance
             alt: this.visit(ctx.expr(2)) as Expression
 
         }
+    }
+
+    visitFunapp(ctx: FunappContext) : FunAppExpr {
+        const funExpr = ctx.expr();
+        const args = ctx.exprs().expr()
+        
+        return {
+            kind: "funapp",
+            fun: this.visit(funExpr) as Expression,
+            args : args.map(a => this.visit(a)) as Expression[]
+        }
+
+
     }
 
 
