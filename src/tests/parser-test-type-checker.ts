@@ -12,5 +12,7 @@ val fnalt = (a: int, b : int, c: int) => {
     
 };
 
+(() => 4)(4);
+
 
 `

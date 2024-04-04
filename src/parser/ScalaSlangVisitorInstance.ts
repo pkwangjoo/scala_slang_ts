@@ -169,12 +169,16 @@ export class ScalaSlangVisitorInstance
 
     visitFunapp(ctx: FunappContext) : FunAppExpr {
         const funExpr = ctx.expr();
-        const args = ctx.exprs().expr()
+        const argExprs = ctx.exprs().expr()
+        const args = argExprs.length == 0
+            ? [{kind: "unit"} as UnitExpr]
+            : argExprs.map(a => this.visit(a)) as Expression[]
+
         
         return {
             kind: "funapp",
             fun: this.visit(funExpr) as Expression,
-            args : args.map(a => this.visit(a)) as Expression[]
+            args 
         }
 
 

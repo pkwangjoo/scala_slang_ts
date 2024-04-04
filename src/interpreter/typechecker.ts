@@ -5,6 +5,9 @@ intlit : (comp: IntLit) => {
     return "int";
 },
 
+unit: () => "unit",
+
+
 lambda : (comp: LambdaExpr) => {
     const { params: formals, formal_types, body } = comp;
     const currFn = (formals, formal_types, body) => {
@@ -14,6 +17,12 @@ lambda : (comp: LambdaExpr) => {
         }
 
         // TODO bind types to variables
+
+
+        // function with empty params
+        if (formals.length === 0) {
+            return ["unit", type_of(body)];
+        }
 
         // take the first argument
         if (formals.length == 1) {
@@ -67,6 +76,50 @@ assign: (comp: AssignmentStat) => {
     // IF undefined then we just assign the type as such
 
     return "unit";
+}, 
+
+funapp: (comp: FunAppExpr) => {
+
+
+    // TODO support name 
+    console.log(comp.fun)
+    console.log(comp.args)
+    const funType = type_of(comp.fun);
+
+    if (!Array.isArray(funType)) {
+        throw new Error("The given function is not of function type")
+    }
+
+    const argTypes = comp.args.map(a => type_of(a));
+
+
+    const applySingleArg = (funType, arg) => {
+        const domType = funType[0]
+        const rangeType = funType[1] 
+
+        if (domType === "unit") {
+            return rangeType
+        }
+
+        if (!isTypeEqual(domType, arg)) {
+            throw Error(`domtype of ${domType} doesnt match the arg type ${arg}`)
+        } 
+
+        return rangeType
+    }
+
+    const applyArgRec = (funType, args) => {
+        if (args.length === 1) {
+            return applySingleArg(funType, args[0])
+        }   
+
+        applySingleArg(funType, args[0])
+
+        return applyArgRec(funType[1], args.slice(1))
+    }
+
+    return applyArgRec(funType, argTypes)
+
 }
 }
 
@@ -88,7 +141,7 @@ const isTypeEqual = (ty1: ty, ty2: ty) => {
 
 }
 
-export const type_of = (comp: AstNode) => {
+export const type_of = (comp: AstNode): ty => {
     return type_of_aux[comp.kind](comp);
 }
 

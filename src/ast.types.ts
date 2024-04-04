@@ -31,6 +31,13 @@ type CondExpr = {
     alt: Expression
 }
 
+type FunAppExpr = {
+    kind: "funapp"
+    fun: Expression,
+    args: Expression[]
+
+}
+
 
 type AssignmentStat = {
     kind: "assign"
@@ -71,14 +78,19 @@ type Statement =
     | BlockStat
     | IfStat
     | TerminalAstNode
+    ;
 
+type UnitExpr = {kind: "unit"}
 
 type Expression = 
       BinopExpr
     | Name
     | IntLit
     | CondExpr
-    | LambdaExpr;
+    | LambdaExpr
+    | FunAppExpr
+    | UnitExpr
+    ;
 
 type EmptyNode = {
     kind: "empty"

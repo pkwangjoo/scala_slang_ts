@@ -33,7 +33,7 @@ absTypeDef : simpleTypeDef '->' typeDef
     ;
 
 
-names:  ID (':' typeDef)? | (ID (':' typeDef)? (',' ID (':' typeDef)? )*)
+names:  (ID (':' typeDef)?)? | (ID (':' typeDef)? (',' ID (':' typeDef)? )*)
     ;
 
 exprs:  expr | (expr (',' expr)*)
