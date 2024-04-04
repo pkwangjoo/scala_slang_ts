@@ -6,10 +6,11 @@ import { test_case, test_case_4 } from "../tests/parser-test";
 import { test_case_2 } from "../tests/parser-test";
 import { test_case_3 } from "../tests/parser-test";
 import {ScalaSlangVisitorInstance} from "./ScalaSlangVisitorInstance"
+import { tc_test_1 } from "../tests/parser-test-type-checker";
 
 
 
-let inputStream = new ANTLRInputStream(test_case_4);
+let inputStream = new ANTLRInputStream(tc_test_1);
 let lexer = new ScalaSlangLexer(inputStream);
 let tokenStream = new CommonTokenStream(lexer);
 let parser = new ScalaSlangParser(tokenStream);

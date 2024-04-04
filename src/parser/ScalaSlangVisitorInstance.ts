@@ -1,12 +1,12 @@
 
 import { TerminalNode } from "antlr4ts/tree/TerminalNode";
-import { AssignstatContext, BinopexprContext, BlockContext, BlockstatContext, CondexprContext, ExprContext, ExprstatContext, FundefstatContext, IfstatContext, IntlitContext, LambdaexprContext, NameContext, NamesContext, ParanexprContext, ProgContext, StatContext } from "./ScalaSlangParser";
+import { AbsTypeDefContext, AssignstatContext, BAbsTypeDefContext, BSimpleTypeDefContext, BinopexprContext, BlockContext, BlockstatContext, BparanTypeDefContext, CondexprContext, ExprContext, ExprstatContext, FundefstatContext, IfstatContext, IntlitContext, LambdaexprContext, NameContext, NamesContext, ParanTypeDefContext, ParanexprContext, ProgContext, SimpleTypeDefContext, StatContext, TypeDefContext } from "./ScalaSlangParser";
 import { ScalaSlangVisitor } from "./ScalaSlangVisitor";
 import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor'
 
 export class ScalaSlangVisitorInstance 
-    extends AbstractParseTreeVisitor<AstNode> 
-    implements ScalaSlangVisitor<AstNode> {
+    extends AbstractParseTreeVisitor<AstNode | ty> 
+    implements ScalaSlangVisitor<AstNode | ty> {
 
 
     protected defaultResult(): AstNode {
@@ -25,6 +25,7 @@ export class ScalaSlangVisitorInstance
 
     visitProg(ctx: ProgContext) : Sequence {
         
+        
         return {
             kind : "seq",
             stmts: ctx.children!.map(s => this.visit(s) as Statement)
@@ -32,17 +33,22 @@ export class ScalaSlangVisitorInstance
     }
 
     visitAssignstat(ctx: AssignstatContext) : AssignmentStat {
+        const declaredType = ctx.typeDef() 
+            ? this.visit(ctx.typeDef()!) as ty
+            : undefined;
+
         const name = ctx._name.text!;
         const expr = ctx.expr();
         return {
             name,
+            decl_type : declaredType,
             kind : "assign",
             expr: this.visit(expr) as Expression
         } 
     }
 
-    visitFundefstat(ctx: FundefstatContext) : FunctionDefStat {
-        const name = ctx._name.text;
+    visitFundefstat(ctx: FundefstatContext) : AssignmentStat {
+        const name = ctx._name.text!;
         const params = ctx.names().ID().map(n => n.text)
         const body = this.visit(ctx.block()) as BlockStat;
         const lambdaExpr = {
@@ -52,10 +58,11 @@ export class ScalaSlangVisitorInstance
         } as LambdaExpr
 
         return {
-            kind: "fundef",
+            kind: "assign",
             name, 
-            lambda: lambdaExpr
-        } as FunctionDefStat
+            decl_type : "any",
+            expr: lambdaExpr
+        } as AssignmentStat
     }
 
     visitExprstat(ctx: ExprstatContext) : Expression {
@@ -133,6 +140,10 @@ export class ScalaSlangVisitorInstance
 
     visitLambdaexpr(ctx : LambdaexprContext) : LambdaExpr {
 
+        const params = ctx.names().ID().map(n => n.text)
+        const formal_types = ctx.names().typeDef().map(t => this.visit(t));
+        // console.log(ctx.names().typeDef().map(t => console.log("type in name", t.text)))
+
         const body : BlockStat | Expression = ctx.block() 
             ? this.visit(ctx.block()!) as BlockStat
             : this.visit(ctx.expr()!) as Expression
@@ -140,8 +151,9 @@ export class ScalaSlangVisitorInstance
 
         return {
             kind: "lambda",
-            params: ctx.names().ID().map(n => n.text),
-            body
+            params,
+            body,
+            formal_types
         } as LambdaExpr
     }
 
@@ -154,6 +166,50 @@ export class ScalaSlangVisitorInstance
 
         }
     }
+
+
+    // TYPES
+
+  
+    visitBParantypedef(ctx: BparanTypeDefContext) : ty {
+        
+        return this.visitParanTypeDef(ctx.paranTypeDef());
+
+    }
+
+    visitBSimpleTypeDef(ctx: BSimpleTypeDefContext) : ty {
+
+        return this.visitSimpleTypeDef(ctx.simpleTypeDef());
+    }
+
+    visitBAbsTypeDef(ctx: BAbsTypeDefContext) : ty {
+        return this.visitAbsTypeDef(ctx.absTypeDef()); 
+    }
+
+    visitSimpleTypeDef(ctx: SimpleTypeDefContext) : ty {
+        return ctx._type.text! as ty
+    }
+
+    visitParanTypeDef(ctx: ParanTypeDefContext) : ty {
+        return this.visit(ctx.typeDef()) as ty
+    }
+
+    visitAbsTypeDef(ctx: AbsTypeDefContext) : ty {
+        if (ctx.simpleTypeDef() !== undefined) {
+
+            return [this.visitSimpleTypeDef(ctx.simpleTypeDef()!) as ty, this.visit(ctx.typeDef()!) as ty];
+        }
+        if (ctx.paranTypeDef() !== undefined) {
+
+            return [this.visitParanTypeDef(ctx.paranTypeDef()!) as ty, this.visit(ctx.typeDef()!) as ty];
+        }
+
+        throw Error("ABS TYPEDEF ERROR")
+    }
+
+    
+
+
 
 
 }

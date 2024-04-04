@@ -142,6 +142,7 @@ const compile_comp: CompileFunctions = {
         const assignStat: AssignmentStat = {
             kind: "assign",
             name,
+            decl_type: "any",
             expr: comp.lambda
         }
 
@@ -186,6 +187,7 @@ export const compileIntoVML = (ast : AstNode) => {
     instrs = []
     const mainBlock: BlockStat = {kind : "block", body: ast as Sequence}
     compile(mainBlock, []);
+    console.log("compilation success")
     return instrs;
 
 }

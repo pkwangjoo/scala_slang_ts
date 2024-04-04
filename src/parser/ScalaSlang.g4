@@ -3,7 +3,7 @@ grammar ScalaSlang;
 /** The start rule; begin parsing here. */
 prog:   stat+ EOF; 
 
-stat:   'val' name=ID '=' expr ';'              #assignstat
+stat:   'val' name=ID (':' typeDef)? '=' expr ';'              #assignstat
     |   'def' name=ID '(' names ')' '=' block   #fundefstat
     |   expr ';'                                #exprstat
     |   block                                   #blockstat
@@ -17,8 +17,23 @@ ifstat  : 'if' expr block
         ('else' (block | ifstat))?
     ;
 
+typeDef : paranTypeDef                          #bparanTypeDef           
+        | simpleTypeDef                         #bSimpleTypeDef  
+        | absTypeDef                            #bAbsTypeDef  
+    ;
 
-names:  ID | (ID (',' ID)*)
+simpleTypeDef : type=ID
+    ;
+
+paranTypeDef : '(' typeDef ')'
+    ;
+
+absTypeDef : simpleTypeDef '->' typeDef
+           | paranTypeDef '->' typeDef
+    ;
+
+
+names:  ID (':' typeDef)? | (ID (':' typeDef)? (',' ID (':' typeDef)? )*)
     ;
 
 exprs:  expr | (expr (',' expr)*)
