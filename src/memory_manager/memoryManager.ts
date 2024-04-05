@@ -1,4 +1,4 @@
-class MemoryManager {
+export class MemoryManager {
   private heap: DataView
   private wordSize: number
   private free: number
@@ -33,6 +33,7 @@ class MemoryManager {
 
 
   constructor(bytes: number, wordSize: number = 8) {
+    console.log("MemoryManager", bytes, wordSize)
     if (bytes % wordSize !== 0) {
       throw new Error('Heap bytes must be divisible by word size')
     }
@@ -48,6 +49,7 @@ class MemoryManager {
   }
 
   heapAllocate(tag: number, size: number): number {
+    console.log("heapAllocate", tag, size)
     const address = this.free
     this.free += size
     // Set tag
@@ -164,6 +166,10 @@ class MemoryManager {
     return address
   }
 
+  heapGetBlockframeEnvironment(address: number): number {
+    return this.heapGetChild(address, 0)
+  }
+
   heapAllocateCallframe(env: number, pc: number): number {
     const address = this.heapAllocate(MemoryManager.Callframe_tag, 2)
     this.heapSet2BytesAtOffset(address, 2, pc)
@@ -191,7 +197,9 @@ class MemoryManager {
     return this.heapAllocate(MemoryManager.Environment_tag, numberOfFrames + 1)
   }
 
-  heapEmptyEnvironment: number = this.heapAllocateEnvironment(0)
+  heapEmptyEnvironment(): number {
+    return this.heapAllocateEnvironment(0)
+  }
 
   heapGetEnvironmentValue(
     envAddress: number,

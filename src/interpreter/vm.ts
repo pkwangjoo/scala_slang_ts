@@ -1,3 +1,5 @@
+import { MemoryManager } from "../memory_manager/memoryManager";
+
 type Environment = {
   frames: Frame[]
 }
@@ -8,25 +10,28 @@ interface BinopMicrocode {
   [key: string]: (arg1: any, arg2: any) => any;
 }
 
-class VirtualMachine {
+export class VirtualMachine {
   private operandStack: any[] = [];
   private programCounter: number = 0;
   private environment: number = 0;
   private runtimeStack: any[] = [];
   private mem: MemoryManager = new MemoryManager(10000000, 8);
+  private instructions: Instruction[] = [];
 
   private globalEnvironment: Environment = { frames: [
     // TODO: Add built-in functions to the global environment
   ] };
 
-  constructor(private instructions: Instruction[]) {
-    // init global environment
+  constructor(private instrs: Instruction[]) {
+    this.instructions = instrs;
+    this.instructions.push({ kind: "DONE" });
   }
 
   run() : any {
-    while (this.programCounter < this.instructions.length) {
+    while (this.instructions[this.programCounter].kind !== "DONE") {
       const instruction = this.instructions[this.programCounter];
       this.execute(instruction);
+      this.programCounter++;
     }
     // return the top of the runtime stack
     return this.runtimeStack[this.runtimeStack.length - 1];
@@ -71,8 +76,10 @@ class VirtualMachine {
   }
 
   execute(instruction: Instruction) {
+    console.log(`Executing ${instruction.kind}`)
     if (instruction.kind === "LDC") {
       this.operandStack.push(instruction.val);
+      return;
     }
     if (instruction.kind === "LD") {
       const val = this.mem.heapGetEnvironmentValue(this.environment, instruction.pos);
@@ -80,24 +87,29 @@ class VirtualMachine {
         throw new Error("access of unassigned variable");
       }
       this.operandStack.push(val);
+      return;
     }
     if (instruction.kind === "UNOP") {
       this.operandStack.push(
         this.applyUnop(instruction.sym, this.operandStack.pop())
       );
+      return;
     }
     if (instruction.kind === "BINOP") {
       this.operandStack.push(
         this.applyBinop(instruction.operator, this.operandStack.pop(), this.operandStack.pop())
       );
+      return;
     }
     if (instruction.kind === "JOF") {
       if (this.operandStack.pop() === MemoryManager.True_tag) {
         this.programCounter = instruction.addr;
       }
+      return;
     }
     if (instruction.kind === "GOTO") {
       this.programCounter = instruction.addr;
+      return;
     }
     if (instruction.kind === "CALL") {
       const arity = instruction.arity;
@@ -115,10 +127,12 @@ class VirtualMachine {
         this.mem.heapGetClosureEnvironment(fun)
       );
       this.programCounter = newProgramCounter;
+      return;
     }
     if (instruction.kind === "ASSIGN") {
       const val = this.operandStack[this.operandStack.length - 1]
       this.mem.heapSetEnvironmentValue(this.environment, instruction.pos, val);
+      return;
     }
     if (instruction.kind === "LDF") {
       const closureAddress = this.mem.heapAllocateClosure(
@@ -127,6 +141,7 @@ class VirtualMachine {
         this.environment
       );
       this.operandStack.push(closureAddress);
+      return;
     }
     if (instruction.kind === "RESET") {
       const topFrame = this.runtimeStack.pop();
@@ -136,7 +151,26 @@ class VirtualMachine {
       } else {
         this.programCounter--;
       }
+      return;
     }
-    throw new Error("Not implemented");
+    if (instruction.kind === "ENTER_SCOPE") {
+      this.runtimeStack.push(this.mem.heapAllocateBlockframe(this.environment));
+      const frameAddress = this.mem.heapAllocateFrame(instruction.num);
+      this.environment = this.mem.heapEnvironmentExtend(frameAddress, this.environment);
+      for (let i = 0; i < instruction.num; i++) {
+        this.mem.heapSetChild(frameAddress, i, MemoryManager.Unassigned_tag);
+      }
+      return;
+    }
+    if (instruction.kind === "EXIT_SCOPE") {
+      const topFrame = this.runtimeStack.pop();
+      this.environment = this.mem.heapGetBlockframeEnvironment(topFrame);
+      return;
+    }
+    if (instruction.kind === "POP") {
+      this.operandStack.pop();
+      return;
+    }
+    throw new Error(`Not implemented: ${instruction.kind}`);
   }
 }

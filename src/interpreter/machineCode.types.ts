@@ -52,7 +52,7 @@ type RESET = {
 
 type ENTER_SCOPE = {
   kind: "ENTER_SCOPE"
-  syms: string[]
+  num: number
 }
 
 type EXIT_SCOPE = {

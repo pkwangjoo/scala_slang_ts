@@ -127,7 +127,7 @@ const compile_comp: CompileFunctions = {
     block:
         (comp : BlockStat, ce : any) => {
             const locals = scan(comp.body)
-            instrs[wc++] = {kind: 'ENTER_SCOPE', syms: locals.length}
+            instrs[wc++] = {kind: 'ENTER_SCOPE', num: locals.length}
             compile(comp.body,
                     // extend compile-time environment
                     compile_time_environment_extend(
