@@ -47,10 +47,10 @@ export class VirtualMachine {
 
   private applyUnop(op: string, arg: any): any {
     if (op === '!') {
-      return !arg
+      return this.mem.TsValueToAddress(!this.mem.addressToTsValue(arg))
     }
     if (op === '-') {
-      return -arg
+      return this.mem.TsValueToAddress(-this.mem.addressToTsValue(arg))
     }
     throw new Error('Not implemented')
   }
@@ -80,9 +80,11 @@ export class VirtualMachine {
   }
 
   private applyBinop(op: string, arg1: any, arg2: any): any {
-    return this.binopMicrocode[op](
-      this.mem.addressToTsValue(arg1),
-      this.mem.addressToTsValue(arg2)
+    return this.mem.TsValueToAddress(
+      this.binopMicrocode[op](
+        this.mem.addressToTsValue(arg1),
+        this.mem.addressToTsValue(arg2)
+      )
     )
   }
 
