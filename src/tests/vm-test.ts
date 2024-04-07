@@ -9,3 +9,11 @@ export const vm_test_basic = `
   }
 }
 `;
+
+export const vm_fn_basic = `
+def add(x: Int, y: Int) = {
+  x + y;
+}
+val result = add(3, 5);
+result;
+`;
