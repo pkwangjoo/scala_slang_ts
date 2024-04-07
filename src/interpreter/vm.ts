@@ -17,6 +17,7 @@ export class VirtualMachine {
   private runtimeStack: any[] = [];
   private mem: MemoryManager = new MemoryManager(10000000, 8);
   private instructions: Instruction[] = [];
+  private lastPopped: any;
 
   private globalEnvironment: Environment = { frames: [
     // TODO: Add built-in functions to the global environment
@@ -27,6 +28,11 @@ export class VirtualMachine {
     this.instructions.push({ kind: "DONE" });
   }
 
+  popOperand() {
+    this.lastPopped = this.operandStack.pop();
+    return this.lastPopped;
+  }
+
   run() : any {
     while (this.instructions[this.programCounter].kind !== "DONE") {
       const instruction = this.instructions[this.programCounter];
@@ -34,7 +40,7 @@ export class VirtualMachine {
       this.programCounter++;
     }
     // return the top of the runtime stack
-    return this.runtimeStack[this.runtimeStack.length - 1];
+    return this.lastPopped;
   }
 
   private applyUnop(op: string, arg: any): any {
@@ -91,18 +97,18 @@ export class VirtualMachine {
     }
     if (instruction.kind === "UNOP") {
       this.operandStack.push(
-        this.applyUnop(instruction.sym, this.operandStack.pop())
+        this.applyUnop(instruction.sym, this.popOperand())
       );
       return;
     }
     if (instruction.kind === "BINOP") {
       this.operandStack.push(
-        this.applyBinop(instruction.operator, this.operandStack.pop(), this.operandStack.pop())
+        this.applyBinop(instruction.operator, this.popOperand(), this.popOperand())
       );
       return;
     }
     if (instruction.kind === "JOF") {
-      if (this.operandStack.pop() === MemoryManager.True_tag) {
+      if (this.popOperand() === MemoryManager.True_tag) {
         this.programCounter = instruction.addr;
       }
       return;
@@ -118,9 +124,9 @@ export class VirtualMachine {
       const newProgramCounter = this.mem.heapGetClosurePc(fun);
       const newFrame = this.mem.heapAllocateFrame(arity);
       for (let i = arity - 1; i >= 0; i--) {
-        this.mem.heapSetChild(newFrame, i, this.operandStack.pop());
+        this.mem.heapSetChild(newFrame, i, this.popOperand());
       }
-      this.operandStack.pop(); // pop the function
+      this.popOperand(); // pop the function
       this.runtimeStack.push(this.mem.heapAllocateCallframe(this.environment, this.programCounter));
       this.environment = this.mem.heapEnvironmentExtend(
         newFrame,
@@ -168,7 +174,7 @@ export class VirtualMachine {
       return;
     }
     if (instruction.kind === "POP") {
-      this.operandStack.pop();
+      this.popOperand();
       return;
     }
     throw new Error(`Not implemented: ${instruction.kind}`);
