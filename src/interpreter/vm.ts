@@ -1,182 +1,197 @@
-import { MemoryManager } from "../memory_manager/memoryManager";
+import { MemoryManager } from '../memory_manager/memoryManager'
 
 type Environment = {
   frames: Frame[]
 }
 
-type Frame = Map<string, any>;
+type Frame = Map<string, any>
 
 interface BinopMicrocode {
-  [key: string]: (arg1: any, arg2: any) => any;
+  [key: string]: (arg1: any, arg2: any) => any
 }
 
 export class VirtualMachine {
-  private operandStack: any[] = [];
-  private programCounter: number = 0;
-  private environment: number = 0;
-  private runtimeStack: any[] = [];
-  private mem: MemoryManager = new MemoryManager(10000000, 8);
-  private instructions: Instruction[] = [];
-  private lastPopped: any;
+  private operandStack: any[] = []
+  private programCounter: number = 0
+  private environment: number = 0
+  private runtimeStack: any[] = []
+  private mem: MemoryManager = new MemoryManager(10000000, 8)
+  private instructions: Instruction[] = []
+  private lastPopped: any
 
-  private globalEnvironment: Environment = { frames: [
-    // TODO: Add built-in functions to the global environment
-  ] };
+  private globalEnvironment: Environment = {
+    frames: [
+      // TODO: Add built-in functions to the global environment
+    ],
+  }
 
   constructor(private instrs: Instruction[]) {
-    this.instructions = instrs;
-    this.instructions.push({ kind: "DONE" });
+    this.instructions = instrs
+    this.instructions.push({ kind: 'DONE' })
   }
 
   popOperand() {
-    this.lastPopped = this.operandStack.pop();
-    return this.lastPopped;
+    this.lastPopped = this.operandStack.pop()
+    return this.lastPopped
   }
 
-  run() : any {
-    while (this.instructions[this.programCounter].kind !== "DONE") {
-      const instruction = this.instructions[this.programCounter];
-      this.execute(instruction);
-      this.programCounter++;
+  run(): any {
+    while (this.instructions[this.programCounter].kind !== 'DONE') {
+      const instruction = this.instructions[this.programCounter]
+      this.execute(instruction)
+      this.programCounter++
     }
     // return the top of the runtime stack
-    return this.lastPopped;
+    return this.lastPopped
   }
 
   private applyUnop(op: string, arg: any): any {
-    if (op === "!") {
-      return !arg;
+    if (op === '!') {
+      return !arg
     }
-    if (op === "-") {
-      return -arg;
+    if (op === '-') {
+      return -arg
     }
-    throw new Error("Not implemented");
+    throw new Error('Not implemented')
   }
 
   binopMicrocode: BinopMicrocode = {
-    "+": (a: number | string, b: number | string) => {
+    '+': (a: number | string, b: number | string) => {
       if (typeof a === 'number' && typeof b === 'number') {
-        return a + b;
+        return a + b
       }
       if (typeof a === 'string' && typeof b === 'string') {
-        return a.concat(b);
+        return a.concat(b)
       }
-      throw new Error("Invalid operands for addition");
+      throw new Error('Invalid operands for addition')
     },
-    "-": (a: number, b: number) => a - b,
-    "*": (a: number, b: number) => a * b,
-    "/": (a: number, b: number) => a / b,
-    "%": (a: number, b: number) => a % b,
-    "<": (a: number, b: number) => a < b,
-    "<=": (a: number, b: number) => a <= b,
-    ">": (a: number, b: number) => a > b,
-    ">=": (a: number, b: number) => a >= b,
-    "==": (a: any, b: any) => a === b,
-    "!=": (a: any, b: any) => a !== b,
-    "&&": (a: boolean, b: boolean) => a && b,
-    "||": (a: boolean, b: boolean) => a || b,
+    '-': (a: number, b: number) => a - b,
+    '*': (a: number, b: number) => a * b,
+    '/': (a: number, b: number) => a / b,
+    '%': (a: number, b: number) => a % b,
+    '<': (a: number, b: number) => a < b,
+    '<=': (a: number, b: number) => a <= b,
+    '>': (a: number, b: number) => a > b,
+    '>=': (a: number, b: number) => a >= b,
+    '==': (a: any, b: any) => a === b,
+    '!=': (a: any, b: any) => a !== b,
+    '&&': (a: boolean, b: boolean) => a && b,
+    '||': (a: boolean, b: boolean) => a || b,
   }
 
   private applyBinop(op: string, arg1: any, arg2: any): any {
-    return this.binopMicrocode[op](arg1, arg2);
+    return this.binopMicrocode[op](
+      this.mem.addressToTsValue(arg1),
+      this.mem.addressToTsValue(arg2)
+    )
   }
 
   execute(instruction: Instruction) {
     console.log(`Executing ${instruction.kind}`)
-    if (instruction.kind === "LDC") {
-      this.operandStack.push(instruction.val);
-      return;
+    if (instruction.kind === 'LDC') {
+      this.operandStack.push(this.mem.TsValueToAddress(instruction.val))
+      return
     }
-    if (instruction.kind === "LD") {
-      const val = this.mem.heapGetEnvironmentValue(this.environment, instruction.pos);
-      if (val === MemoryManager.Unassigned_tag) {
-        throw new Error("access of unassigned variable");
+    if (instruction.kind === 'LD') {
+      const val = this.mem.heapGetEnvironmentValue(
+        this.environment,
+        instruction.pos
+      )
+      if (this.mem.getTag(val) === MemoryManager.Unassigned_tag) {
+        throw new Error('access of unassigned variable')
       }
-      this.operandStack.push(val);
-      return;
+      this.operandStack.push(val)
+      return
     }
-    if (instruction.kind === "UNOP") {
+    if (instruction.kind === 'UNOP') {
+      this.operandStack.push(this.applyUnop(instruction.sym, this.popOperand()))
+      return
+    }
+    if (instruction.kind === 'BINOP') {
       this.operandStack.push(
-        this.applyUnop(instruction.sym, this.popOperand())
-      );
-      return;
+        this.applyBinop(
+          instruction.operator,
+          this.popOperand(),
+          this.popOperand()
+        )
+      )
+      return
     }
-    if (instruction.kind === "BINOP") {
-      this.operandStack.push(
-        this.applyBinop(instruction.operator, this.popOperand(), this.popOperand())
-      );
-      return;
-    }
-    if (instruction.kind === "JOF") {
+    if (instruction.kind === 'JOF') {
       if (this.popOperand() === MemoryManager.True_tag) {
-        this.programCounter = instruction.addr;
+        this.programCounter = instruction.addr
       }
-      return;
+      return
     }
-    if (instruction.kind === "GOTO") {
-      this.programCounter = instruction.addr;
-      return;
+    if (instruction.kind === 'GOTO') {
+      this.programCounter = instruction.addr
+      return
     }
-    if (instruction.kind === "CALL") {
-      const arity = instruction.arity;
-      const fun = this.operandStack.slice(-arity - 1)[0];
+    if (instruction.kind === 'CALL') {
+      const arity = instruction.arity
+      const fun = this.operandStack.slice(-arity - 1)[0]
       // TODO: handle any built-in functions
-      const newProgramCounter = this.mem.heapGetClosurePc(fun);
-      const newFrame = this.mem.heapAllocateFrame(arity);
+      const newProgramCounter = this.mem.heapGetClosurePc(fun)
+      const newFrame = this.mem.heapAllocateFrame(arity)
       for (let i = arity - 1; i >= 0; i--) {
-        this.mem.heapSetChild(newFrame, i, this.popOperand());
+        this.mem.heapSetChild(newFrame, i, this.popOperand())
       }
-      this.popOperand(); // pop the function
-      this.runtimeStack.push(this.mem.heapAllocateCallframe(this.environment, this.programCounter));
+      this.popOperand() // pop the function
+      this.runtimeStack.push(
+        this.mem.heapAllocateCallframe(this.environment, this.programCounter)
+      )
       this.environment = this.mem.heapEnvironmentExtend(
         newFrame,
         this.mem.heapGetClosureEnvironment(fun)
-      );
-      this.programCounter = newProgramCounter;
-      return;
+      )
+      this.programCounter = newProgramCounter
+      return
     }
-    if (instruction.kind === "ASSIGN") {
+    if (instruction.kind === 'ASSIGN') {
       const val = this.operandStack[this.operandStack.length - 1]
-      this.mem.heapSetEnvironmentValue(this.environment, instruction.pos, val);
-      return;
+      this.mem.heapSetEnvironmentValue(this.environment, instruction.pos, val)
+      return
     }
-    if (instruction.kind === "LDF") {
+    if (instruction.kind === 'LDF') {
       const closureAddress = this.mem.heapAllocateClosure(
         instruction.prms.length,
         instruction.addr,
         this.environment
-      );
-      this.operandStack.push(closureAddress);
-      return;
+      )
+      this.operandStack.push(closureAddress)
+      return
     }
-    if (instruction.kind === "RESET") {
-      const topFrame = this.runtimeStack.pop();
+    if (instruction.kind === 'RESET') {
+      const topFrame = this.runtimeStack.pop()
       if (this.mem.isCallframe(topFrame)) {
-        this.programCounter = this.mem.heapGetCallframePc(topFrame);
-        this.environment = this.mem.heapGetCallframeEnvironment(topFrame);
+        this.programCounter = this.mem.heapGetCallframePc(topFrame)
+        this.environment = this.mem.heapGetCallframeEnvironment(topFrame)
       } else {
-        this.programCounter--;
+        this.programCounter--
       }
-      return;
+      return
     }
-    if (instruction.kind === "ENTER_SCOPE") {
-      this.runtimeStack.push(this.mem.heapAllocateBlockframe(this.environment));
-      const frameAddress = this.mem.heapAllocateFrame(instruction.num);
-      this.environment = this.mem.heapEnvironmentExtend(frameAddress, this.environment);
+    if (instruction.kind === 'ENTER_SCOPE') {
+      this.runtimeStack.push(this.mem.heapAllocateBlockframe(this.environment))
+      const frameAddress = this.mem.heapAllocateFrame(instruction.num)
+      this.environment = this.mem.heapEnvironmentExtend(
+        frameAddress,
+        this.environment
+      )
       for (let i = 0; i < instruction.num; i++) {
-        this.mem.heapSetChild(frameAddress, i, MemoryManager.Unassigned_tag);
+        this.mem.heapSetChild(frameAddress, i, MemoryManager.Unassigned_tag)
       }
-      return;
+      return
     }
-    if (instruction.kind === "EXIT_SCOPE") {
-      const topFrame = this.runtimeStack.pop();
-      this.environment = this.mem.heapGetBlockframeEnvironment(topFrame);
-      return;
+    if (instruction.kind === 'EXIT_SCOPE') {
+      const topFrame = this.runtimeStack.pop()
+      this.environment = this.mem.heapGetBlockframeEnvironment(topFrame)
+      return
     }
-    if (instruction.kind === "POP") {
-      this.popOperand();
-      return;
+    if (instruction.kind === 'POP') {
+      this.popOperand()
+      return
     }
-    throw new Error(`Not implemented: ${instruction.kind}`);
+    throw new Error(`Not implemented: ${instruction.kind}`)
   }
 }
