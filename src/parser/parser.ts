@@ -11,7 +11,7 @@ import { vm_fn_basic, vm_test_basic } from "../tests/vm-test";
 
 
 
-let inputStream = new ANTLRInputStream(vm_fn_basic);
+let inputStream = new ANTLRInputStream(vm_test_basic);
 let lexer = new ScalaSlangLexer(inputStream);
 let tokenStream = new CommonTokenStream(lexer);
 let parser = new ScalaSlangParser(tokenStream);

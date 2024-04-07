@@ -194,6 +194,23 @@ export class VirtualMachine {
       this.popOperand()
       return
     }
+    if (instruction.kind === 'TAIL_CALL') {
+      const arity = instruction.arity
+      const fun = this.operandStack.slice(-arity - 1)[0]
+      const newProgramCounter = this.mem.heapGetClosurePc(fun)
+      const newFrame = this.mem.heapAllocateFrame(arity)
+      for (let i = arity - 1; i >= 0; i--) {
+        this.mem.heapSetChild(newFrame, i, this.popOperand())
+      }
+      this.popOperand() // pop the function
+      this.environment = this.mem.heapEnvironmentExtend(
+        newFrame,
+        this.mem.heapGetClosureEnvironment(fun)
+      )
+      this.programCounter = newProgramCounter
+      return
+    }
+
     throw new Error(`Not implemented: ${instruction.kind}`)
   }
 }
