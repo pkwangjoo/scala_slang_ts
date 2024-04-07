@@ -42,7 +42,7 @@ export class VirtualMachine {
       this.programCounter++
     }
     // return the top of the runtime stack
-    return this.lastPopped
+    return this.mem.addressToTsValue(this.lastPopped)
   }
 
   private applyUnop(op: string, arg: any): any {
