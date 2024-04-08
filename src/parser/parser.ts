@@ -11,16 +11,21 @@ import { vm_fn_basic, vm_test_basic } from "../tests/vm-test";
 
 
 
-let inputStream = new ANTLRInputStream(test_case_5);
-let lexer = new ScalaSlangLexer(inputStream);
-let tokenStream = new CommonTokenStream(lexer);
-let parser = new ScalaSlangParser(tokenStream);
 
 
-let tree = parser.prog();
+export const parse = (progString : string) : AstNode => {
+    let inputStream = new ANTLRInputStream(progString);
+    let lexer = new ScalaSlangLexer(inputStream);
+    let tokenStream = new CommonTokenStream(lexer);
+    let parser = new ScalaSlangParser(tokenStream);
+    
+    
+    let tree = parser.prog();
+    
+    let visitor = new ScalaSlangVisitorInstance();
 
-let visitor = new ScalaSlangVisitorInstance();
+    return visitor.visit(tree) as AstNode;
+}
 
 
-export const ast = visitor.visit(tree);
 
