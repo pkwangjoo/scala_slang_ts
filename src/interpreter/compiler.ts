@@ -64,7 +64,8 @@ interface CompileFunctions {
     lambda: (comp: LambdaExpr, ce: any) => void;
     block: (comp: BlockStat, ce: any) => void;
     fundef: (comp: FunctionDefStat, ce: any) => void;
-    seq : (comp: Sequence, ce: any) => void
+    seq : (comp: Sequence, ce: any) => void;
+    ret : (comp: RetStat, ce: any) => void;
   }
 
 
@@ -94,7 +95,7 @@ const compile_comp: CompileFunctions = {
             const slot_for_GOTO = wc++;
             const alternative_address = wc;
             instrs[slot_for_JOF] = {kind: "JOF", addr: alternative_address} 
-            compile(comp.alt, ce)
+            if (comp.alt) compile(comp.alt, ce)
             instrs[slot_for_GOTO] = {kind: "GOTO", addr: wc}
         },
     assign:
@@ -148,6 +149,11 @@ const compile_comp: CompileFunctions = {
 
         compile(assignStat, ce);
     },
+
+    ret: (comp : RetStat, ce: any) => {
+        compile(comp.expr, ce);
+        instrs[wc++] = {kind : 'RESET'}
+    }
         
 };
 
@@ -176,8 +182,10 @@ const compile = (comp: AstNode, env: any) => {
         compile_comp[comp.kind](comp as Sequence, env);
     } else if (comp.kind == "terminal" && comp.sym === "<EOF>") {
         instrs[wc] = {kind: "DONE"}
+    } else if (comp.kind == "ret") {
+        compile_comp[comp.kind](comp as RetStat, env)
     } else {
-        throw new Error("unknown componenet")    
+        throw new Error(`unknown componenet ${JSON.stringify(comp)}`)    
     }
 
 

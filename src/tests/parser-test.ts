@@ -71,3 +71,16 @@ def helloFn(a, b, c) = {
 }
 
 `
+
+// Return statement
+export const test_case_5 = `
+def fn (a, b, c) = {
+    if a {
+        return b;
+    }
+
+    return c;
+
+}
+
+`

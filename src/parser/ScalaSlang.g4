@@ -8,6 +8,7 @@ stat:   'val' name=ID (':' typeDef)? '=' expr ';'              #assignstat
     |   expr ';'                                #exprstat
     |   block                                   #blockstat
     |   ifstat                                  #ifstatement
+    |   'return' expr ';'                       #returnstatement
     ;
 
 block: '{' stat+ '}'

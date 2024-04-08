@@ -4,10 +4,12 @@ import { type_of } from "./typechecker";
 import { VirtualMachine } from "./vm";
 
 
-// console.log("recevied ast as: ", ast as AstNode);
+console.log("recevied ast as: ", JSON.stringify(ast as AstNode, null, 2));
 // const t = type_of(ast as AstNode);
 
 // console.log("TYPE CHECKING SUCCESS")
+
+
 
 const is = compileIntoVML(ast as AstNode);
 

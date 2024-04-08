@@ -62,7 +62,12 @@ type IfStat = {
     kind: "ifstat"
     pred: Expression
     conseq: BlockStat
-    alt: BlockStat | IfStat
+    alt: BlockStat | IfStat | undefined
+}
+
+type RetStat = {
+    kind: "ret"
+    expr: Expression
 }
 
 type Sequence = {
@@ -77,6 +82,7 @@ type Statement =
     | Expression
     | BlockStat
     | IfStat
+    | RetStat
     | TerminalAstNode
     ;
 

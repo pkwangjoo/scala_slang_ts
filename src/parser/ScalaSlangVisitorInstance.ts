@@ -1,6 +1,6 @@
 
 import { TerminalNode } from "antlr4ts/tree/TerminalNode";
-import { AbsTypeDefContext, AssignstatContext, BAbsTypeDefContext, BSimpleTypeDefContext, BinopexprContext, BlockContext, BlockstatContext, BparanTypeDefContext, CondexprContext, ExprContext, ExprstatContext, FunappContext, FundefstatContext, IfstatContext, IntlitContext, LambdaexprContext, NameContext, NamesContext, ParanTypeDefContext, ParanexprContext, ProgContext, SimpleTypeDefContext, StatContext, TypeDefContext } from "./ScalaSlangParser";
+import { AbsTypeDefContext, AssignstatContext, BAbsTypeDefContext, BSimpleTypeDefContext, BinopexprContext, BlockContext, BlockstatContext, BparanTypeDefContext, CondexprContext, ExprContext, ExprstatContext, FunappContext, FundefstatContext, IfstatContext, IntlitContext, LambdaexprContext, NameContext, NamesContext, ParanTypeDefContext, ParanexprContext, ProgContext, ReturnstatementContext, SimpleTypeDefContext, StatContext, TypeDefContext } from "./ScalaSlangParser";
 import { ScalaSlangVisitor } from "./ScalaSlangVisitor";
 import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor'
 
@@ -89,7 +89,9 @@ export class ScalaSlangVisitorInstance
         
         const pred = this.visit(ctx.expr()) as Expression
         const conseq = this.visit(ctx.block(0)) as BlockStat
-        if (ctx.ifstat()) {
+
+        
+        if (ctx.ifstat() !== undefined) {
             return {
                 kind: "ifstat",
                 pred,
@@ -98,6 +100,18 @@ export class ScalaSlangVisitorInstance
             }
         }
 
+        console.log("problem here")
+
+        if (ctx.block().length < 2) {
+            return {
+                kind : "ifstat",
+                pred,
+                conseq,
+                alt : undefined
+            }
+        }
+
+
         const alt = this.visit(ctx.block(1)) as BlockStat;
         return {
             kind: "ifstat",
@@ -105,6 +119,16 @@ export class ScalaSlangVisitorInstance
             conseq, 
             alt 
         } 
+    }
+
+    visitReturnstatement(ctx: ReturnstatementContext) : RetStat {
+        const expr = this.visit(ctx.expr()) as Expression;
+        console.log(expr);
+
+        return {
+            kind : "ret",
+            expr
+        }
     }
 
     visitBinopexpr(ctx: BinopexprContext): BinopExpr {
