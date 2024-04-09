@@ -1,6 +1,6 @@
 type LDC = {
   kind: "LDC"
-  val: number | undefined
+  val: number | boolean | undefined
 }
 
 type LD = {

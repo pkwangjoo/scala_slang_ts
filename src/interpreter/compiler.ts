@@ -57,6 +57,7 @@ const compile_sequence = (seq: Sequence, ce: any) => {
 
 interface CompileFunctions {
     intlit: (comp: IntLit, ce: any) => void;
+    boollit: (comp: BoolLit, ce: any) => void;
     name: (comp: Name, ce: any) => void;
     binop: (comp: BinopExpr, ce: any) => void;
     cond: (comp: CondExpr | IfStat, ce: any) => void;
@@ -75,6 +76,11 @@ const compile_comp: CompileFunctions = {
         (comp: IntLit, ce: any) => {
             // Assuming instrs and wc are defined somewhere in your code
             instrs[wc++] = { kind: "LDC", val: comp.val };
+        },
+    boollit: 
+        (comp: BoolLit, ce : any) => {
+            instrs[wc++] = {kind: "LDC", val: comp.val}
+    
         },
     name:
         (comp: Name, ce: any) => {
@@ -161,6 +167,8 @@ const compile_comp: CompileFunctions = {
 const compile = (comp: AstNode, env: any) => {
     if (comp.kind === 'intlit') {
         compile_comp[comp.kind](comp as IntLit, env);
+    } else if (comp.kind === 'boollit') {
+        compile_comp[comp.kind](comp as BoolLit, env);
     } else if (comp.kind === 'name') {
         compile_comp[comp.kind](comp as Name, env);
     } else if (comp.kind === 'assign') {
