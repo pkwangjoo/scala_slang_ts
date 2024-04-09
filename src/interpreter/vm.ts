@@ -80,12 +80,11 @@ export class VirtualMachine {
   }
 
   private applyBinop(op: string, arg1: any, arg2: any): any {
-    return this.mem.TsValueToAddress(
-      this.binopMicrocode[op](
-        this.mem.addressToTsValue(arg1),
-        this.mem.addressToTsValue(arg2)
-      )
-    )
+    const val1 = this.mem.addressToTsValue(arg2)
+    const val2 = this.mem.addressToTsValue(arg1)
+    const microcode = this.binopMicrocode[op]
+    const result = microcode(val1, val2)
+    return this.mem.TsValueToAddress(result)
   }
 
   execute(instruction: Instruction) {
@@ -120,7 +119,7 @@ export class VirtualMachine {
       return
     }
     if (instruction.kind === 'JOF') {
-      if (this.popOperand() === MemoryManager.True_tag) {
+      if (this.popOperand() === MemoryManager.False_tag) {
         this.programCounter = instruction.addr
       }
       return

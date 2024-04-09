@@ -4,8 +4,8 @@ export class MemoryManager {
   private free: number
   private sizeOffset: number
 
-  static False_tag: number = 0
-  static True_tag: number = 1
+  static False_tag: number = 13
+  static True_tag: number = 14
   static Number_tag: number = 2
   static Null_tag: number = 3
   static Unassigned_tag: number = 4
@@ -41,8 +41,8 @@ export class MemoryManager {
     this.wordSize = wordSize
     this.free = 0
     this.sizeOffset = 5
-    this.True = this.heapAllocate(MemoryManager.True_tag, 1)
     this.False = this.heapAllocate(MemoryManager.False_tag, 1)
+    this.True = this.heapAllocate(MemoryManager.True_tag, 1)
     this.Null = this.heapAllocate(MemoryManager.Null_tag, 1)
     this.Undefined = this.heapAllocate(MemoryManager.Undefined_tag, 1)
     this.Unassigned = this.heapAllocate(MemoryManager.Unassigned_tag, 1)
@@ -242,8 +242,10 @@ export class MemoryManager {
   }
 
   addressToTsValue = (x: number): any => {
-    if (this.isBoolean(x)) {
-        return this.isTrue(x) ? true : false;
+    if (this.isTrue(x)) {
+        return true;
+    } else if (this.isFalse(x)) {
+        return false;
     } else if (this.isNumber(x)) {
         return this.heapGet(x + 1);
     } else if (this.isUndefined(x)) {
