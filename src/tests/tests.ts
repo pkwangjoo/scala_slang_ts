@@ -17,3 +17,17 @@ export const test2 = `
 }
 
 `
+// test name
+export const test3 = `
+val a = 3;
+a;
+
+val b = true;
+b;
+
+val c = false;
+
+val d = b && c;
+
+d;
+`
