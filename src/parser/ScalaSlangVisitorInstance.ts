@@ -50,17 +50,21 @@ export class ScalaSlangVisitorInstance
     visitFundefstat(ctx: FundefstatContext) : AssignmentStat {
         const name = ctx._name.text!;
         const params = ctx.names().ID().map(n => n.text)
+        const formal_types = ctx.names().typeDef().map(t => this.visit(t));
+
+
         const body = this.visit(ctx.block()) as BlockStat;
         const lambdaExpr = {
             kind: "lambda",
             params,
+            formal_types: formal_types,
             body
         } as LambdaExpr
 
         return {
             kind: "assign",
             name, 
-            decl_type : "any",
+            decl_type : undefined,
             expr: lambdaExpr
         } as AssignmentStat
     }

@@ -15,6 +15,7 @@ const extend_type_environment = (bindings: [[string, ty]], e: TyEnv) => {
 }
 
 const look_up_type = (sym : string, te : TyEnv) => {
+    console.log(te);
     if (te === null) {
         throw Error(`Type for ${sym} is unbound`)
     }
@@ -59,29 +60,29 @@ binop: (comp : BinopExpr, te : TyEnv) => {
 
 lambda : (comp: LambdaExpr, te : TyEnv) => {
     const { params: formals, formal_types, body } = comp;
-    const currFn = (formals, formal_types, body) => {
+    const currFn = (formals: string[], formal_types: ty[], body, te : TyEnv) => {
 
         if (formals.length !== formal_types.length) {
             throw Error("MUST DECLARE TYPES FOR ALL PARAMS")
         }
-
-        // TODO bind types to variables
-
 
         // function with empty params
         if (formals.length === 0) {
             return ["unit", type_of(body, te)];
         }
 
+        const extendedTe = extend_type_environment([[formals[0], formal_types[0]]], te);
+
+
         // take the first argument
         if (formals.length == 1) {
-            return [formal_types[0], type_of(body, te)];
+            return [formal_types[0], type_of(body, extendedTe)];
         }
 
-        return [formal_types[0], currFn(formals.slice(1), formal_types.slice(1), body)]
+        return [formal_types[0], currFn(formals.slice(1), formal_types.slice(1), body, extendedTe)]
     }
-
-    return currFn(formals, formal_types, body);
+    const resTy = currFn(formals, formal_types, body, te); 
+    return resTy
 
 },
 
@@ -90,8 +91,8 @@ seq: (comp: Sequence, te : TyEnv) => {
     // Hack
     const stmts = comp.stmts.filter(comp => comp.kind !== "terminal");
 
-    const helper = (stmts: Statement[], env: TyEnv) => {
-        if (stmts.length == 0) return "unit";
+    const helper = (stmts: Statement[], env: TyEnv, prevType: ty) => {
+        if (stmts.length == 0) return prevType;
 
         const curr = stmts[0];
         const rest = stmts.slice(1);
@@ -107,26 +108,27 @@ seq: (comp: Sequence, te : TyEnv) => {
 
             const extendedTe = extend_type_environment([[name, expressionType]], env);
 
-            return helper(rest, extendedTe)
+            return helper(rest, extendedTe, "unit")
         }
 
-        type_of(curr, env);
-
-        return helper(rest, env)
+        return helper(rest, env, type_of(curr, env))
     } 
     
 
-    return helper(stmts, te);
+    return helper(stmts, te, "unit");
 
 },
 
 block : (comp : BlockStat, te : TyEnv) => {
-    type_of(comp.body, te);
+    return type_of(comp.body, te);
 },
 
 assign: (comp: AssignmentStat, te : TyEnv) => {
+    console.log("assign")
     const declaredType = comp.decl_type;
+    console.log(comp.expr)
     const expressionType = type_of(comp.expr, te);
+    console.log(expressionType)
     
     
     if (declaredType !== undefined && !isTypeEqual(declaredType, expressionType)) {
@@ -182,8 +184,11 @@ funapp: (comp: FunAppExpr, te : TyEnv) => {
 
 name : (comp: Name, te: TyEnv) => {
     return look_up_type(comp.sym, te);
-}
+},
 
+ret : (comp: RetStat, te: TyEnv) => {
+    return type_of(comp.expr, te);
+}
 
 }
 
@@ -221,6 +226,7 @@ export const type_of = (comp: AstNode, te : TyEnv): ty => {
 
 
 export const typecheck = (comp: AstNode) => {
+    console.log(comp.kind)
     const TyProg = type_of(comp, null);
     console.log(`Type check success with progtype ${TyProg}`)
 }
