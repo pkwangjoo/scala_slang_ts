@@ -41,6 +41,7 @@ exprs:  expr | (expr (',' expr)*)
     ;
 
 expr:   expr op=BINOP expr                      #binopexpr 
+    |   expr op=BINLOGOP expr                   #binlogopexpr
     |   val=INT                                 #intlit
     |   bool=BOOL                               #boollit
     |   name=ID                                 #name

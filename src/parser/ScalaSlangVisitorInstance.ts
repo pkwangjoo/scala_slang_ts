@@ -1,6 +1,6 @@
 
 import { TerminalNode } from "antlr4ts/tree/TerminalNode";
-import { AbsTypeDefContext, AssignstatContext, BAbsTypeDefContext, BSimpleTypeDefContext, BinopexprContext, BlockContext, BlockstatContext, BoollitContext, BparanTypeDefContext, CondexprContext, ExprContext, ExprstatContext, FunappContext, FundefstatContext, IfstatContext, IntlitContext, LambdaexprContext, NameContext, NamesContext, ParanTypeDefContext, ParanexprContext, ProgContext, ReturnstatementContext, SimpleTypeDefContext, StatContext, TypeDefContext } from "./ScalaSlangParser";
+import { AbsTypeDefContext, AssignstatContext, BAbsTypeDefContext, BSimpleTypeDefContext, BinlogopexprContext, BinopexprContext, BlockContext, BlockstatContext, BoollitContext, BparanTypeDefContext, CondexprContext, ExprContext, ExprstatContext, FunappContext, FundefstatContext, IfstatContext, IntlitContext, LambdaexprContext, NameContext, NamesContext, ParanTypeDefContext, ParanexprContext, ProgContext, ReturnstatementContext, SimpleTypeDefContext, StatContext, TypeDefContext } from "./ScalaSlangParser";
 import { ScalaSlangVisitor } from "./ScalaSlangVisitor";
 import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor'
 
@@ -149,6 +149,29 @@ export class ScalaSlangVisitorInstance
 
     }
 
+    visitBinlogopexpr(ctx: BinlogopexprContext) : CondExpr {
+        const fst = ctx.expr(0)
+        const scnd = ctx.expr(1)
+        const operator = ctx._op.text!
+
+        if (operator === "&&") {
+            return {
+                kind: "cond",
+                pred: this.visit(fst) as Expression,
+                conseq: this.visit(scnd) as Expression,
+                alt: { kind: "boollit", val : false}
+            }
+        }
+
+        // oeprator === "||"
+        return {
+            kind: "cond", 
+            pred: this.visit(fst) as Expression,
+            conseq: {kind: "boollit", val: true},
+            alt: this.visit(scnd) as Expression
+        }
+    }
+
     visitIntlit(ctx: IntlitContext) : IntLit {
         return {
             kind: "intlit",
@@ -164,7 +187,6 @@ export class ScalaSlangVisitorInstance
                 : false
         }
     }
-
 
     visitName(ctx: NameContext) : Name {
         return {

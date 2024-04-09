@@ -21,6 +21,13 @@ type BinopExpr = {
     operator : string
 }
 
+type BinLogExpr = {
+    kind: "binlogop"
+    operator: string,
+    operand1 : Expression
+    operand2 : Expression
+}
+
 type LambdaExpr = {
     kind: "lambda"
     params : string[]
@@ -95,6 +102,7 @@ type UnitExpr = {kind: "unit"}
 
 type Expression = 
       BinopExpr
+    | BinLogExpr
     | Name
     | IntLit
     | BoolLit

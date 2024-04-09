@@ -4,7 +4,16 @@ export const test1 = `
 
 export const test2 = `
 {
-    true;
+
+    true && true;
+
+    true && false;
+
+    true || false;
+
+    false || true;
+
+    false || false;
 }
 
 `
