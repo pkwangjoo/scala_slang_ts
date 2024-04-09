@@ -33,12 +33,37 @@ d;
 `
 export const test4 = `
 {
-    val a : int = 1;
-    val b : int = 2;
-    val c : int = a + b; 
+
+
+    def fn(a: int, b: int) = {
+        return a + b;
+    }
+
+    fn(1)(3);
 }
 
-
 `
+
+// mutual recursion
+// polymorphism
+// let- polymorhphism
+
+// monomorphic
+
+// type schema, type funciton
+
+// see how scala workds,
+// scala constructs let polymorphisms , let polymorphism,
+// follows the specification of hindley milner
+
+// constraint based approach
+
+// constraint solving hindley milner, elegant implementation
+
+// constraint based types
+
+
+// we dont need to deal with the subtyping
+
 
 
