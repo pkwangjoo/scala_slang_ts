@@ -67,6 +67,7 @@ interface CompileFunctions {
     fundef: (comp: FunctionDefStat, ce: any) => void;
     seq : (comp: Sequence, ce: any) => void;
     ret : (comp: RetStat, ce: any) => void;
+    funapp: (com: FunAppExpr, ce : any) => void;
   }
 
 
@@ -159,7 +160,14 @@ const compile_comp: CompileFunctions = {
     ret: (comp : RetStat, ce: any) => {
         compile(comp.expr, ce);
         instrs[wc++] = {kind : 'RESET'}
-    }
+    },
+
+    funapp: (comp : FunAppExpr, ce : any) => {
+        compile(comp.fun, ce);
+        comp.args.map(arg => compile(arg, ce))
+
+        instrs[wc++] = {kind : "CALL", arity: comp.args.length}
+    } 
         
 };
 
@@ -186,12 +194,14 @@ const compile = (comp: AstNode, env: any) => {
         compile_comp["cond"](comp as IfStat, env);
     } else if (comp.kind === 'lambda') {
         compile_comp[comp.kind](comp as LambdaExpr, env);
-    } else if (comp.kind == "seq"){
+    } else if (comp.kind === "seq"){
         compile_comp[comp.kind](comp as Sequence, env);
-    } else if (comp.kind == "terminal" && comp.sym === "<EOF>") {
+    } else if (comp.kind === "terminal" && comp.sym === "<EOF>") {
         instrs[wc] = {kind: "DONE"}
-    } else if (comp.kind == "ret") {
+    } else if (comp.kind === "ret") {
         compile_comp[comp.kind](comp as RetStat, env)
+    } else if (comp.kind === "funapp") {
+        compile_comp[comp.kind](comp as FunAppExpr, env)
     } else {
         throw new Error(`unknown componenet ${JSON.stringify(comp)}`)    
     }
