@@ -33,9 +33,9 @@ d;
 `
 export const test4 = `
 {
-    val a : int = 4;
-    val b : int = 3;
-    val c : int = b;
+    val a : int = 1;
+    val b : int = 2;
+    val c : int = a + b; 
 }
 
 

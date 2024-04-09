@@ -3,15 +3,15 @@ const empty_type_env = null;
 type frame = Record<string, ty> | null
 type TyEnv = [frame, TyEnv] | null
 
-const extend_type_environment = (xs, ts, e) => {
-    if (ts.length > xs.length) 
-        throw Error('too few parameters in function declaration')
-    if (ts.length < xs.length) 
-        throw Error('too many parameters in function declaration')
+
+const extend_type_environment = (bindings: [[string, ty]], e: TyEnv) => {
     const new_frame = {}
-    for (let i = 0; i < xs.length; i++) 
-        new_frame[xs[i]] = ts[i]
-    return [new_frame, e]
+    for (let i = 0; i < bindings.length; i++) {
+        const [sym, ty] = bindings[i]; 
+        new_frame[sym] = ty
+    }
+
+    return [new_frame, e] as TyEnv
 }
 
 const look_up_type = (sym : string, te : TyEnv) => {
@@ -45,6 +45,17 @@ boollit : (comp: BoolLit, te : TyEnv) => {
 
 unit: () => "unit",
 
+binop: (comp : BinopExpr, te : TyEnv) => {
+    if (comp.operator === "+" || comp.operator === "-" || comp.operator === "*" || comp.operator === "/") {
+        if (type_of(comp.operand1, te) !== 'int' || type_of(comp.operand2, te) !== 'int' ) {
+            throw Error(`binop operands for "${comp.operator}" must both be integers`)
+        }
+
+        return "int";
+    }
+
+},
+
 
 lambda : (comp: LambdaExpr, te : TyEnv) => {
     const { params: formals, formal_types, body } = comp;
@@ -75,25 +86,37 @@ lambda : (comp: LambdaExpr, te : TyEnv) => {
 },
 
 seq: (comp: Sequence, te : TyEnv) => {
+
+    // Hack
     const stmts = comp.stmts.filter(comp => comp.kind !== "terminal");
 
-    const helper = (stmts) => {
+    const helper = (stmts: Statement[], env: TyEnv) => {
         if (stmts.length == 0) return "unit";
 
-        const lastStmt = stmts[stmts.length - 1];
-        const rest = stmts.slice(0, -1);
+        const curr = stmts[0];
+        const rest = stmts.slice(1);
+        if (curr.kind === "assign") {
+            const {name, decl_type, expr} = curr;
 
-        if (helper(rest) !== "unit") {
-            throw new Error("Sequence should give unit in the rest statements before this")
+            const expressionType = type_of(expr, env);
+
+
+            if (decl_type !== undefined && !isTypeEqual(decl_type, expressionType)) {
+                throw Error(`Declared type of ${decl_type} did not match the expression type ${expressionType} for sym ${name}`)
+            } 
+
+            const extendedTe = extend_type_environment([[name, expressionType]], env);
+
+            return helper(rest, extendedTe)
         }
 
-        type_of(lastStmt, te);
-        // if it is well typed then we return "unit", we throw out the result
-        return "unit";
+        type_of(curr, env);
 
-    }
+        return helper(rest, env)
+    } 
+    
 
-    return helper(stmts);
+    return helper(stmts, te);
 
 },
 
@@ -103,7 +126,6 @@ block : (comp : BlockStat, te : TyEnv) => {
 
 assign: (comp: AssignmentStat, te : TyEnv) => {
     const declaredType = comp.decl_type;
-
     const expressionType = type_of(comp.expr, te);
     
     
@@ -120,8 +142,6 @@ funapp: (comp: FunAppExpr, te : TyEnv) => {
 
 
     // TODO support name 
-    console.log(comp.fun)
-    console.log(comp.args)
     const funType = type_of(comp.fun, te);
 
     if (!Array.isArray(funType)) {
