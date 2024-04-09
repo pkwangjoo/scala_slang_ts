@@ -126,7 +126,7 @@ export class VirtualMachine {
       return
     }
     if (instruction.kind === 'GOTO') {
-      this.programCounter = instruction.addr
+      this.programCounter = instruction.addr - 1 // -1 because we increment it at the end of the loop
       return
     }
     if (instruction.kind === 'CALL') {
