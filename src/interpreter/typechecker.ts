@@ -1,14 +1,52 @@
-const type_env = [];
+const empty_type_env = null;
+
+type frame = Record<string, ty> | null
+type TyEnv = [frame, TyEnv] | null
+
+const extend_type_environment = (xs, ts, e) => {
+    if (ts.length > xs.length) 
+        throw Error('too few parameters in function declaration')
+    if (ts.length < xs.length) 
+        throw Error('too many parameters in function declaration')
+    const new_frame = {}
+    for (let i = 0; i < xs.length; i++) 
+        new_frame[xs[i]] = ts[i]
+    return [new_frame, e]
+}
+
+const look_up_type = (sym : string, te : TyEnv) => {
+    if (te === null) {
+        throw Error(`Type for ${sym} is unbound`)
+    }
+
+    // search in the current frame
+    const type_in_curr_frame = te[0]![sym];
+
+    if (type_in_curr_frame === undefined) {
+        return look_up_type(sym, te[1]);
+    } 
+
+    return type_in_curr_frame;
+
+    
+}
+
+
 const type_of_aux = {
 
-intlit : (comp: IntLit) => {
+intlit : (comp: IntLit, te : TyEnv) => {
     return "int";
 },
+
+boollit : (comp: BoolLit, te : TyEnv) => {
+    return "bool";
+},
+
 
 unit: () => "unit",
 
 
-lambda : (comp: LambdaExpr) => {
+lambda : (comp: LambdaExpr, te : TyEnv) => {
     const { params: formals, formal_types, body } = comp;
     const currFn = (formals, formal_types, body) => {
 
@@ -21,12 +59,12 @@ lambda : (comp: LambdaExpr) => {
 
         // function with empty params
         if (formals.length === 0) {
-            return ["unit", type_of(body)];
+            return ["unit", type_of(body, te)];
         }
 
         // take the first argument
         if (formals.length == 1) {
-            return [formal_types[0], type_of(body)];
+            return [formal_types[0], type_of(body, te)];
         }
 
         return [formal_types[0], currFn(formals.slice(1), formal_types.slice(1), body)]
@@ -36,7 +74,7 @@ lambda : (comp: LambdaExpr) => {
 
 },
 
-seq: (comp: Sequence) => {
+seq: (comp: Sequence, te : TyEnv) => {
     const stmts = comp.stmts.filter(comp => comp.kind !== "terminal");
 
     const helper = (stmts) => {
@@ -49,7 +87,7 @@ seq: (comp: Sequence) => {
             throw new Error("Sequence should give unit in the rest statements before this")
         }
 
-        type_of(lastStmt);
+        type_of(lastStmt, te);
         // if it is well typed then we return "unit", we throw out the result
         return "unit";
 
@@ -59,14 +97,14 @@ seq: (comp: Sequence) => {
 
 },
 
-block : (comp : BlockStat) => {
-    type_of(comp.body);
+block : (comp : BlockStat, te : TyEnv) => {
+    type_of(comp.body, te);
 },
 
-assign: (comp: AssignmentStat) => {
+assign: (comp: AssignmentStat, te : TyEnv) => {
     const declaredType = comp.decl_type;
 
-    const expressionType = type_of(comp.expr);
+    const expressionType = type_of(comp.expr, te);
     
     
     if (declaredType !== undefined && !isTypeEqual(declaredType, expressionType)) {
@@ -78,19 +116,19 @@ assign: (comp: AssignmentStat) => {
     return "unit";
 }, 
 
-funapp: (comp: FunAppExpr) => {
+funapp: (comp: FunAppExpr, te : TyEnv) => {
 
 
     // TODO support name 
     console.log(comp.fun)
     console.log(comp.args)
-    const funType = type_of(comp.fun);
+    const funType = type_of(comp.fun, te);
 
     if (!Array.isArray(funType)) {
         throw new Error("The given function is not of function type")
     }
 
-    const argTypes = comp.args.map(a => type_of(a));
+    const argTypes = comp.args.map(a => type_of(a, te));
 
 
     const applySingleArg = (funType, arg) => {
@@ -120,7 +158,13 @@ funapp: (comp: FunAppExpr) => {
 
     return applyArgRec(funType, argTypes)
 
+},
+
+name : (comp: Name, te: TyEnv) => {
+    return look_up_type(comp.sym, te);
 }
+
+
 }
 
 
@@ -141,8 +185,22 @@ const isTypeEqual = (ty1: ty, ty2: ty) => {
 
 }
 
-export const type_of = (comp: AstNode): ty => {
-    return type_of_aux[comp.kind](comp);
+export const type_of = (comp: AstNode, te : TyEnv): ty => {
+    let res;
+    try {
+        res = type_of_aux[comp.kind](comp, te);
+    } catch (e) {
+        if (e instanceof TypeError) {
+            console.log(`type check for component of kind : ${comp.kind} is not implemented`)
+        } else {
+            throw e
+        }
+    }
+    return res;
 }
 
 
+export const typecheck = (comp: AstNode) => {
+    const TyProg = type_of(comp, null);
+    console.log(`Type check success with progtype ${TyProg}`)
+}
