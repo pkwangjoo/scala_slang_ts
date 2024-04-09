@@ -41,8 +41,9 @@ exprs:  expr | (expr (',' expr)*)
     ;
 
 expr:   expr op=BINOP expr                      #binopexpr 
-    |   val=INT                                     #intlit
-    |   name=ID                                      #name 
+    |   val=INT                                 #intlit
+    |   bool=BOOL                               #boollit
+    |   name=ID                                 #name
     |   '(' expr ')'                            #paranexpr 
     |   '(' names ')' '=>' (block | expr)       #lambdaexpr
     |   expr '(' exprs ')'                      #funapp
@@ -51,8 +52,9 @@ expr:   expr op=BINOP expr                      #binopexpr
 
 
 
-ID  :   [a-zA-Z]+ ;      // match identifiers <label id="code.tour.expr.3"/>
 INT :   [0-9]+ ;         // match integers
+BOOL:   ('true' | 'false') ;
+ID  :   [a-zA-Z]+ ;      // match identifiers <label id="code.tour.expr.3"/>
 BINOP : ('+' | '-' | '*' | '/' | '==' | '!=' | '<' | '>' | '<=' | '>=') ; //
 UNARY : ('!') ;
 BINLOGOP : ('&&' | '||') ;

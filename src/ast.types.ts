@@ -9,6 +9,11 @@ type IntLit = {
     val : number
 }
 
+type BoolLit = {
+    kind: "boollit"
+    val: boolean
+}
+
 type BinopExpr = {
     kind: "binop"
     operand1 : Expression
@@ -92,6 +97,7 @@ type Expression =
       BinopExpr
     | Name
     | IntLit
+    | BoolLit
     | CondExpr
     | LambdaExpr
     | FunAppExpr

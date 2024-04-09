@@ -1,6 +1,6 @@
 
 import { TerminalNode } from "antlr4ts/tree/TerminalNode";
-import { AbsTypeDefContext, AssignstatContext, BAbsTypeDefContext, BSimpleTypeDefContext, BinopexprContext, BlockContext, BlockstatContext, BparanTypeDefContext, CondexprContext, ExprContext, ExprstatContext, FunappContext, FundefstatContext, IfstatContext, IntlitContext, LambdaexprContext, NameContext, NamesContext, ParanTypeDefContext, ParanexprContext, ProgContext, ReturnstatementContext, SimpleTypeDefContext, StatContext, TypeDefContext } from "./ScalaSlangParser";
+import { AbsTypeDefContext, AssignstatContext, BAbsTypeDefContext, BSimpleTypeDefContext, BinopexprContext, BlockContext, BlockstatContext, BoollitContext, BparanTypeDefContext, CondexprContext, ExprContext, ExprstatContext, FunappContext, FundefstatContext, IfstatContext, IntlitContext, LambdaexprContext, NameContext, NamesContext, ParanTypeDefContext, ParanexprContext, ProgContext, ReturnstatementContext, SimpleTypeDefContext, StatContext, TypeDefContext } from "./ScalaSlangParser";
 import { ScalaSlangVisitor } from "./ScalaSlangVisitor";
 import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor'
 
@@ -75,7 +75,12 @@ export class ScalaSlangVisitorInstance
     }
 
     visitBlock(ctx : BlockContext) : BlockStat {
-        const stmts = ctx.getRuleContexts(StatContext).map(r => this.visit(r) as Statement);
+        console.log("visitblock")
+        const stmts = ctx.getRuleContexts(StatContext)
+        .map(r => {
+            console.log(r.text)
+            return this.visit(r) as Statement
+        });
         return {
             kind: "block",
             body: {
@@ -100,7 +105,6 @@ export class ScalaSlangVisitorInstance
             }
         }
 
-        console.log("problem here")
 
         if (ctx.block().length < 2) {
             return {
@@ -151,6 +155,17 @@ export class ScalaSlangVisitorInstance
             val: parseInt(ctx._val.text!),
         } 
     }
+
+    visitBoollit(ctx: BoollitContext) : BoolLit {
+        return {
+            kind: "boollit",
+            val: ctx._bool.text! === 'true' 
+                ? true 
+                : false
+        }
+    }
+
+
     visitName(ctx: NameContext) : Name {
         return {
             kind: "name",

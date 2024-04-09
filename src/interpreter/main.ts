@@ -3,9 +3,9 @@ import { test_case_5 } from "../tests/parser-test";
 import { compileIntoVML } from "./compiler";
 import { type_of } from "./typechecker";
 import { VirtualMachine } from "./vm";
-import { test1 } from "../tests/tests";
+import { test1, test2 } from "../tests/tests";
 
-const ast = parse(test1);
+const ast = parse(test2);
 
 console.log("recevied ast as: ", JSON.stringify(ast as AstNode, null, 2));
 
