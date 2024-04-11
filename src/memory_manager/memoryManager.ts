@@ -190,7 +190,7 @@ export class MemoryManager {
   }
 
   heapAllocateFrame(numberOfValues: number): number {
-    return this.heapAllocate(MemoryManager.Frame_tag, numberOfValues)
+    return this.heapAllocate(MemoryManager.Frame_tag, numberOfValues + 1)
   }
 
   heapAllocateEnvironment(numberOfFrames: number): number {

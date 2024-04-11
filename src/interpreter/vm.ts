@@ -35,6 +35,10 @@ export class VirtualMachine {
     return this.lastPopped
   }
 
+  debugEnv(pos, env) {
+    return this.mem.heapGetEnvironmentValue(env, pos)
+  }
+
   run(): any {
     while (this.instructions[this.programCounter].kind !== 'DONE') {
       const instruction = this.instructions[this.programCounter]
@@ -145,7 +149,7 @@ export class VirtualMachine {
         newFrame,
         this.mem.heapGetClosureEnvironment(fun)
       )
-      this.programCounter = newProgramCounter
+      this.programCounter = newProgramCounter - 1 // -1 because we increment it at the end of the loop
       return
     }
     if (instruction.kind === 'ASSIGN') {
