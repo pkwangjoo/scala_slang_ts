@@ -95,6 +95,8 @@ seq: (comp: Sequence, te : TyEnv) => {
         if (stmts.length == 0) return prevType;
 
         const curr = stmts[0];
+
+
         const rest = stmts.slice(1);
         if (curr.kind === "assign") {
             const {name, decl_type, expr} = curr;
@@ -110,6 +112,7 @@ seq: (comp: Sequence, te : TyEnv) => {
 
             return helper(rest, extendedTe, "unit")
         }
+
 
         return helper(rest, env, type_of(curr, env))
     } 
@@ -172,6 +175,30 @@ name : (comp: Name, te: TyEnv) => {
 
 ret : (comp: RetStat, te: TyEnv) => {
     return type_of(comp.expr, te);
+},
+
+ifstat: (comp : IfStat, te: TyEnv) => {
+    const {pred, conseq, alt} = comp
+
+    if (type_of(pred, te) !== "bool") {
+        throw new Error(`Type of predicate must be bool but got ${type_of(pred, te)}`)
+    }
+
+    if (alt === undefined) {
+        throw new Error("else branch is not defined")
+    }
+
+    const TyConseq = type_of(conseq, te);
+    const TyAlt = type_of(alt, te);
+
+    if (!isTypeEqual(TyAlt, TyConseq)) {
+        throw new Error(`Branches must have the same type but got \n
+                            conseq: ${TyConseq} \n
+                            alt: ${TyAlt}`)
+    }
+
+    return TyAlt;
+
 }
 
 }
