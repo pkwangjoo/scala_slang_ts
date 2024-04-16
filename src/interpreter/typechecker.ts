@@ -123,22 +123,6 @@ block : (comp : BlockStat, te : TyEnv) => {
     return type_of(comp.body, te);
 },
 
-assign: (comp: AssignmentStat, te : TyEnv) => {
-    console.log("assign")
-    const declaredType = comp.decl_type;
-    console.log(comp.expr)
-    const expressionType = type_of(comp.expr, te);
-    console.log(expressionType)
-    
-    
-    if (declaredType !== undefined && !isTypeEqual(declaredType, expressionType)) {
-        throw Error(`Declared type of ${declaredType} did not match the expression type ${expressionType} for sym ${comp.name}`)
-    }
-
-    // IF undefined then we just assign the type as such
-
-    return "unit";
-}, 
 
 funapp: (comp: FunAppExpr, te : TyEnv) => {
 
