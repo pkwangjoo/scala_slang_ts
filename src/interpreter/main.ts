@@ -12,11 +12,7 @@ function run(program) {
   // disable typechecking by commenting this line
   // typecheck(ast)
   const is = compileIntoVML(ast as AstNode);
-  for (let i = 0; i < is.length; i ++) {
-      console.log(i, is[i])
-  }
   const vm = new VirtualMachine(is);
-  // console.log(vm.run());
   return vm.run();
 }
 

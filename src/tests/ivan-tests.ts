@@ -45,8 +45,8 @@ result;
 };
 
 export const allTests = [
-  // testSingleAssignment,
-  // testMultipleAssignment,
-  // testFunctionDefinition,
+  testSingleAssignment,
+  testMultipleAssignment,
+  testFunctionDefinition,
   testFunctionNested,
 ];
