@@ -8,7 +8,7 @@ import { allTests } from "../tests/ivan-tests";
 
 function run(program) {
   const ast = parse(program);
-  console.log("recevied ast as: ", JSON.stringify(ast as AstNode, null, 2));
+  // console.log("recevied ast as: ", JSON.stringify(ast as AstNode, null, 2));
   // disable typechecking by commenting this line
   // typecheck(ast)
   const is = compileIntoVML(ast as AstNode);
