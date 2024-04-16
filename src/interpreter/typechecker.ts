@@ -3,6 +3,15 @@ const empty_type_env = null;
 type frame = Record<string, ty> | null
 type TyEnv = [frame, TyEnv] | null
 
+type ty = TyInt | TyBool | TyArr | string; // the string is for type variables
+
+type TyInt = "int"
+type TyBool = "bool"
+type TyUnit = "unit"
+type TyArr = [ty, ty]
+
+type pickFreshTy = () => string; // picks a fresh name
+
 
 const extend_type_environment = (bindings: [[string, ty]], e: TyEnv) => {
     const new_frame = {}
