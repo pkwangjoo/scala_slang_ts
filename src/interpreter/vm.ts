@@ -92,7 +92,7 @@ export class VirtualMachine {
   }
 
   execute(instruction: Instruction) {
-    console.log(`Executing ${instruction.kind}`)
+    // console.log(`Executing ${instruction.kind}`)
     if (instruction.kind === 'LDC') {
       this.operandStack.push(this.mem.TsValueToAddress(instruction.val))
       return

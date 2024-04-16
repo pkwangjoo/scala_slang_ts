@@ -33,7 +33,7 @@ export class MemoryManager {
 
 
   constructor(bytes: number, wordSize: number = 8) {
-    console.log("MemoryManager", bytes, wordSize)
+    // console.log("MemoryManager", bytes, wordSize)
     if (bytes % wordSize !== 0) {
       throw new Error('Heap bytes must be divisible by word size')
     }
@@ -49,7 +49,7 @@ export class MemoryManager {
   }
 
   heapAllocate(tag: number, size: number): number {
-    console.log("heapAllocate", tag, size)
+    // console.log("heapAllocate", tag, size)
     const address = this.free
     this.free += size
     // Set tag

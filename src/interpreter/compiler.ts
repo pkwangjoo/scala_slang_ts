@@ -211,9 +211,10 @@ const compile = (comp: AstNode, env: any) => {
 
 export const compileIntoVML = (ast : AstNode) => {
     instrs = []
+    wc = 0;
     const mainBlock: BlockStat = {kind : "block", body: ast as Sequence}
     compile(mainBlock, []);
-    console.log("compilation success")
+    // console.log("compilation success")
     return instrs;
 
 }
