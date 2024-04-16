@@ -4,20 +4,38 @@ import { compileIntoVML } from "./compiler";
 import { type_of, typecheck } from "./typechecker";
 import { VirtualMachine } from "./vm";
 import { test1, test2, test3, test4 } from "../tests/tests";
+import { allTests } from "../tests/ivan-tests";
 
-const ast = parse(test4);
-
-console.log("recevied ast as: ", JSON.stringify(ast as AstNode, null, 2));
-
-// disable typechecking by commenting this line
-typecheck(ast)
-
-const is = compileIntoVML(ast as AstNode);
-
-for (let i = 0; i < is.length; i ++) {
-    console.log(i, is[i])
+function run(program) {
+  const ast = parse(program);
+  console.log("recevied ast as: ", JSON.stringify(ast as AstNode, null, 2));
+  // disable typechecking by commenting this line
+  typecheck(ast)
+  const is = compileIntoVML(ast as AstNode);
+  for (let i = 0; i < is.length; i ++) {
+      console.log(i, is[i])
+  }
+  const vm = new VirtualMachine(is);
+  // console.log(vm.run());
+  return vm.run();
 }
 
-// const vm = new VirtualMachine(is);
-// console.log(vm.run());
+const tests = allTests;
+for (let i = 0; i < tests.length; i++) {
+  console.log("running test: ", tests[i]['name']);
+  try {
+    const res = run(tests[i]['test']);
+    if (res === tests[i]['expected']) {
+      console.log(`test ${tests[i]['name']} passed`);
+    } else {
+      console.log(`test ${tests[i]['name']} failed: expected ${tests[i]['expected']} but got ${res}`);
+    }
+  } catch (e) {
+    if (e === tests[i]['expected']) {
+      console.log(`test ${tests[i]['name']} passed`);
+    } else {
+      throw e;
+    }
+  }
+}
 
