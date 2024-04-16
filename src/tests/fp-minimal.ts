@@ -1,6 +1,6 @@
 import { compileIntoVML } from "../interpreter/compiler"
 import { compile_ast_to_term } from "../interpreter/lambda_compiler";
-import { typecheck } from "../interpreter/typechecker"
+import { type_inferencer, typecheck } from "../interpreter/typechecker"
 import { parse } from "../parser/parser"
 
 
@@ -94,6 +94,34 @@ export const fp_min_tc_6_ty = () => test_type(tc6);
 
 // Type inference
 
+const tc_inf_1 = `
+true ? 4 : 5;
+
+`
+
+export const fp_min_tc_inf_1 = () => {
+    const ast = parse(tc_inf_1);
+    const ifStat = (ast as Sequence).stmts[0];
+    console.log(ifStat)
+    console.log(JSON.stringify(type_inferencer()(ifStat)))
+};
+
+
+const tc_inf_2 = `
+true 
+    ? true
+        ? 2
+        : 4
+    : 5
+`
+
+export const fp_min_tc_inf_2 = () => {
+    const ast = parse(tc_inf_2);
+    const ifStat = (ast as Sequence).stmts[0];
+    console.log(ifStat)
+    console.log(JSON.stringify(type_inferencer()(ifStat)))
+};
+
 
 
 
@@ -119,4 +147,10 @@ const test_type = (test_case: string) => {
     const ast = parse(test_case) 
     console.log(JSON.stringify(ast, null, 2));
     typecheck(ast);
+}
+
+const test_type_inf = (test_case : string) => {
+    const ast = parse(test_case)
+    console.log(JSON.stringify(ast, null, 2));
+    const ti = type_inferencer()(ast);
 }

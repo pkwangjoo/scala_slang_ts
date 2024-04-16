@@ -3,15 +3,26 @@ const empty_type_env = null;
 type frame = Record<string, ty> | null
 type TyEnv = [frame, TyEnv] | null
 
-type ty = TyInt | TyBool | TyArr | string; // the string is for type variables
 
-type TyInt = "int"
-type TyBool = "bool"
-type TyUnit = "unit"
-type TyArr = [ty, ty]
 
 type pickFreshTy = () => string; // picks a fresh name
 
+// constraint that ty == ty
+type constraint = [ty, ty]
+
+// ty generates a set of constraints
+type tyWithConstraints = [ty, constraint[]]
+
+// substitute first to second
+type substitution = [ty, ty] | []
+
+const isTypeVariable = (t : ty) => {
+    if (Array.isArray(t)) { // of TyArr
+        return false;
+    }
+
+    return t !== "int" && t!== "bool" && t !== "unit";
+}
 
 const extend_type_environment = (bindings: [[string, ty]], e: TyEnv) => {
     const new_frame = {}
@@ -38,7 +49,6 @@ const look_up_type = (sym : string, te : TyEnv) => {
 
     return type_in_curr_frame;
 
-    
 }
 
 
@@ -211,6 +221,98 @@ ifstat: (comp : IfStat, te: TyEnv) => {
 }
 
 }
+
+
+const infer_type_aux = (pickFresh : pickFreshTy) => ({
+    
+
+seq : (comp : Sequence) => {
+    const {stmts} = comp;
+    const stmtsWithoutTerminal = stmts.filter(s => s.kind !== "terminal")
+
+
+    
+},    
+
+intlit : (comp : IntLit) => ["int", []],
+
+boollit : (comp : BoolLit) => ["bool", []],
+
+cond : (comp: IfStat) : tyWithConstraints=> {
+    
+    const resTy = pickFresh();
+
+    const {pred, conseq, alt} = comp;
+
+    if (alt === undefined) {
+        throw Error("Branch must have alt defined")
+    }
+
+    const [tyPred, cPred] = infer_type(pickFresh)(pred);
+    const [tyConseq, cConseq] = infer_type(pickFresh)(conseq);
+    const [tyAlt, cAlt] = infer_type(pickFresh)(alt);
+
+
+    // get all the constraints from pred, conseq and alt, and enforce new constraints 
+    return [
+        resTy, 
+        [...cPred, ...cConseq, ...cAlt, 
+            [tyPred, "bool"], 
+            [resTy, tyConseq], 
+            [resTy, tyAlt]]
+        ]
+
+}
+
+
+})
+
+const infer_type = (pickFresh) => (comp : AstNode) : tyWithConstraints => {
+    if (!(comp.kind in infer_type_aux(pickFresh))) {
+        throw Error(`type inference for ${comp.kind} not implemented`)
+    }
+
+    return infer_type_aux(pickFresh)[comp.kind](comp);
+}
+
+export const type_inferencer = () => {
+
+    let fresh = 0;
+    const pickFresh: pickFreshTy = () => {
+        fresh++;
+        return fresh.toString();
+    }
+    return infer_type(pickFresh);
+
+
+}
+
+// sequence of substitutions
+export const unify = (cs: constraint[]) : substitution[] => {
+    if (cs.length === 0) {
+        return []
+    }
+
+    const curr = cs[0];
+    const rest = cs.slice(1);
+
+    const left = curr[0];
+    const right = curr[1]
+
+    if (left === right) {
+        return unify(rest)
+
+    }
+    // TODO unify function types
+    if (Array.isArray(left) || Array.isArray(right)) {
+        throw Error("TyArr unify to be implemneted!!")
+    }
+
+    throw Error("To be implemented!")
+
+
+}
+
 
 
 const isTypeEqual = (ty1: ty, ty2: ty) => {
