@@ -37,8 +37,7 @@ type BinLogExpr = {
 
 type LambdaExpr = {
     kind: "lambda"
-    params : string[]
-    formal_types : ty[]
+    formals: [[string, (ty | undefined)]]
     body : BlockStat | Expression
 }
 

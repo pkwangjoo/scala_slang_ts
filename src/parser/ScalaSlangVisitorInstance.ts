@@ -49,15 +49,21 @@ export class ScalaSlangVisitorInstance
 
     visitFundefstat(ctx: FundefstatContext) : AssignmentStat {
         const name = ctx._name.text!;
-        const params = ctx.names().ID().map(n => n.text)
-        const formal_types = ctx.names().typeDef().map(t => this.visit(t));
+        const formals = ctx.names().nameAndType().map( nt => {
+
+            const name = nt.ID().text!
+            const type = nt.typeDef() 
+                ? this.visit(nt.typeDef()!)
+                : undefined
+
+            return [name, type]
+        })
 
 
         const body = this.visit(ctx.block()) as BlockStat;
         const lambdaExpr = {
             kind: "lambda",
-            params,
-            formal_types: formal_types,
+            formals,
             body
         } as LambdaExpr
 
@@ -205,8 +211,16 @@ export class ScalaSlangVisitorInstance
 
     visitLambdaexpr(ctx : LambdaexprContext) : LambdaExpr {
 
-        const params = ctx.names().ID().map(n => n.text)
-        const formal_types = ctx.names().typeDef().map(t => this.visit(t));
+        const formals = ctx.names().nameAndType().map( nt => {
+
+            const name = nt.ID().text!
+            const type = nt.typeDef() 
+                ? this.visit(nt.typeDef()!)
+                : undefined
+
+            return [name, type]
+        })
+        
         // console.log(ctx.names().typeDef().map(t => console.log("type in name", t.text)))
 
         const body : BlockStat | Expression = ctx.block() 
@@ -216,9 +230,7 @@ export class ScalaSlangVisitorInstance
 
         return {
             kind: "lambda",
-            params,
-            body,
-            formal_types
+            formals,
         } as LambdaExpr
     }
 
