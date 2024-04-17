@@ -1,6 +1,6 @@
 import { compileIntoVML } from "../interpreter/compiler"
 import { compile_ast_to_term } from "../interpreter/lambda_compiler";
-import { type_inferencer, typecheck } from "../interpreter/typechecker"
+import { infer_type_of_ast, typecheck } from "../interpreter/typechecker"
 import { parse } from "../parser/parser"
 
 
@@ -103,26 +103,45 @@ export const fp_min_tc_inf_1 = () => {
     const ast = parse(tc_inf_1);
     const ifStat = (ast as Sequence).stmts[0];
     console.log(ifStat)
-    console.log(JSON.stringify(type_inferencer()(ifStat)))
+    console.log(infer_type_of_ast(ifStat))
 };
 
-
+// parser limitation, need to indicate brackets
 const tc_inf_2 = `
 true 
-    ? true
-        ? 2
-        : 4
-    : 5
+    ? 3
+    : true ? 4 : false
+        
 `
 
 export const fp_min_tc_inf_2 = () => {
     const ast = parse(tc_inf_2);
     const ifStat = (ast as Sequence).stmts[0];
     console.log(ifStat)
-    console.log(JSON.stringify(type_inferencer()(ifStat)))
+    console.log(infer_type_of_ast(ifStat))
 };
 
 
+const tc_inf_3 =  `
+(x) => true ? x : 3;
+`
+export const fp_min_tc_inf_3 = () => {
+    const ast = parse(tc_inf_3);
+    const comp = (ast as Sequence).stmts[0];
+    console.log(comp)
+    console.log(infer_type_of_ast(comp))
+};
+
+
+const tc_inf_4 =  `
+((x, y, z) => true ? x : y)(3)(4)
+`
+export const fp_min_tc_inf_4 = () => {
+    const ast = parse(tc_inf_4);
+    const comp = (ast as Sequence).stmts[0];
+    console.log(JSON.stringify(comp, null,2 ))
+    console.log(JSON.stringify(infer_type_of_ast(comp)))
+};
 
 
 
@@ -152,5 +171,5 @@ const test_type = (test_case: string) => {
 const test_type_inf = (test_case : string) => {
     const ast = parse(test_case)
     console.log(JSON.stringify(ast, null, 2));
-    const ti = type_inferencer()(ast);
+    console.log(infer_type_of_ast(ast))
 }

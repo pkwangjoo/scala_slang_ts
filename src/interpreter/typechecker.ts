@@ -32,7 +32,6 @@ const extend_type_environment = (binding: [string, ty], e: TyEnv) => {
 }
 
 const look_up_type = (sym : string, te : TyEnv) => {
-    console.log(te);
     if (te === null) {
         throw Error(`Type for ${sym} is unbound`)
     }
@@ -244,7 +243,7 @@ lambda : (comp : LambdaExpr, env) : tyWithConstraints => {
 
     const {formals, body} = comp;
 
-    const currFn = (formals: [string, (ty | undefined)][], body, te : TyEnv) : tyWithConstraints => {
+    const currFn = (formals: [string, (ty | undefined)][], body, env) : tyWithConstraints => {
         // function with empty params
         if (formals.length === 0) {
             return ["int", []];
@@ -258,7 +257,9 @@ lambda : (comp : LambdaExpr, env) : tyWithConstraints => {
             ? pickFresh() 
             : curr[1];
 
-        const extendedTe = extend_type_environment([currSym, currTy], env);
+
+
+        const extendedTe = extend_type_environment([currSym, currTy],env);
         
         if (formals.length === 1) {
             if (body.kind === "block") {
@@ -281,6 +282,42 @@ lambda : (comp : LambdaExpr, env) : tyWithConstraints => {
     const resTy = currFn(formals, body, env);  
 
     return resTy;
+
+},
+
+funapp : (comp : FunAppExpr, env) : tyWithConstraints=> {
+
+    const {fun, args} = comp;
+
+
+    const funapp_aux = (tyFun, cFun, args) => {
+
+        if (args.length === 0) {
+            return [tyFun, cFun]
+        }
+
+        const curr = args[0]
+
+        const [tyArg, cArg] = infer_type(pickFresh)(curr, env);
+
+        const resTy = pickFresh()
+
+        const resC = [
+            ...cFun, 
+            ...cArg,
+            [tyFun, [tyArg, resTy]]
+        ]
+
+
+        return funapp_aux(resTy, resC, args.slice(1));
+
+
+    }
+
+    const [tyFun, cFun] = infer_type(pickFresh)(fun, env);
+    return funapp_aux(tyFun, cFun, args);
+    return ["int", []]
+
 
 },
 
@@ -338,10 +375,9 @@ export const infer_type_of_ast = (ast : AstNode) => {
     const [ty, c] = infer_type(pickFresh)(ast, null);
 
     const ss = unify(c);
+    
 
-
-
-    return [ty, c]
+    return [ty, ss]
 
 
 }
@@ -372,21 +408,57 @@ const unify = (cs: constraint[]) : substitution[] => {
     const left = curr[0];
     const right = curr[1]
 
-    if (left === right) {
+    if (isTypeEqual(left, right)) {
         return unify(rest)
 
     }
-    // TODO unify function types
-    if (Array.isArray(left) || Array.isArray(right)) {
-        throw Error("TyArr unify to be implemneted!!")
+
+    const doesThisTyAppearInThatTy = (thisTy : ty, thatTy : ty) => {
+        if (Array.isArray(thisTy) || !isTypeVariable(thisTy)) {
+            throw Error("thisTy must be a type variable")
+        }   
+        
+
+        const helper = (thisTy : ty, thatTy : ty) => {
+            if (!Array.isArray(thatTy)) {
+                return isTypeEqual(thisTy, thatTy) 
+            } else {
+                return helper(thisTy, thatTy[0]) || helper(thisTy, thatTy[1])
+            }
+        }
+
+        return helper(thisTy, thatTy);
+
+
     }
 
-    if (isTypeVariable(left) && !isTypeEqual(left, right)) {
+
+    if (isTypeVariable(left) && !doesThisTyAppearInThatTy(left, right)) {
+        
         return [[right, left], ...unify(rest)]
+
     }
 
-    if (isTypeVariable(right) && !isTypeEqual(left, right)) {
+    if (isTypeVariable(right) && !doesThisTyAppearInThatTy(right, left)) {
+        
         return [[left, right], ...unify(rest)]
+
+    }
+
+    
+
+        // TODO unify function types
+    if (Array.isArray(left) && Array.isArray(right)) {
+        const leftDom = left[0];
+        const rightDom = right[0];
+        const leftRange = left[1];
+        const rightRange = right[1];
+        return unify(
+            [
+                [leftDom, rightDom],
+                [leftRange, rightRange],
+                 ...rest
+            ]);
 
     }
 
@@ -481,7 +553,6 @@ export const type_of = (comp: AstNode, te : TyEnv): ty => {
 
 
 export const typecheck = (comp: AstNode) => {
-    console.log(comp.kind)
     const TyProg = type_of(comp, null);
     console.log(`Type check success with progtype ${TyProg}`)
 }
