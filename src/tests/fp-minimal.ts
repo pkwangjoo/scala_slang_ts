@@ -134,12 +134,13 @@ export const fp_min_tc_inf_3 = () => {
 
 
 const tc_inf_4 =  `
-((x, y, z) => true ? x : y)(3)(4)
+((x) => (y) => (z) => x ? y : z)(true)(2)(false);
 `
 export const fp_min_tc_inf_4 = () => {
     const ast = parse(tc_inf_4);
     const comp = (ast as Sequence).stmts[0];
     console.log(JSON.stringify(comp, null,2 ))
+
     console.log(JSON.stringify(infer_type_of_ast(comp)))
 };
 

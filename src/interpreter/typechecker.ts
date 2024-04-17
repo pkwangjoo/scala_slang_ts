@@ -16,6 +16,9 @@ type tyWithConstraints = [ty, constraint[]]
 // substitute first to second
 type substitution = [ty, ty] | []
 
+
+
+
 const isTypeVariable = (t : ty) => {
     if (Array.isArray(t)) { // of TyArr
         return false;
@@ -246,7 +249,7 @@ lambda : (comp : LambdaExpr, env) : tyWithConstraints => {
     const currFn = (formals: [string, (ty | undefined)][], body, env) : tyWithConstraints => {
         // function with empty params
         if (formals.length === 0) {
-            return ["int", []];
+            throw Error("Function with 0 param not implemented!")
         }
 
         const curr = formals[0];
@@ -279,7 +282,9 @@ lambda : (comp : LambdaExpr, env) : tyWithConstraints => {
         
     }
     
-    const resTy = currFn(formals, body, env);  
+    const resTy = currFn(formals, body, env);
+
+
 
     return resTy;
 
@@ -289,6 +294,7 @@ funapp : (comp : FunAppExpr, env) : tyWithConstraints=> {
 
     const {fun, args} = comp;
 
+    console.log("funapp!", fun, args)
 
     const funapp_aux = (tyFun, cFun, args) => {
 
@@ -297,10 +303,10 @@ funapp : (comp : FunAppExpr, env) : tyWithConstraints=> {
         }
 
         const curr = args[0]
-
+        const resTy = pickFresh()
         const [tyArg, cArg] = infer_type(pickFresh)(curr, env);
 
-        const resTy = pickFresh()
+        
 
         const resC = [
             ...cFun, 
@@ -315,8 +321,8 @@ funapp : (comp : FunAppExpr, env) : tyWithConstraints=> {
     }
 
     const [tyFun, cFun] = infer_type(pickFresh)(fun, env);
+    console.log("fun type!", tyFun, cFun);
     return funapp_aux(tyFun, cFun, args);
-    return ["int", []]
 
 
 },
@@ -346,8 +352,8 @@ cond : (comp: IfStat, env) : tyWithConstraints=> {
         [resTy, tyAlt]] as  constraint[]
      
     // filter those that are equal and does not provide more value
-    const filteredConstraints = constraints.filter(c => c[0] !== c[1]) 
-    const temp =  [resTy, filteredConstraints]
+
+    const temp =  [resTy, constraints]
 
 
     return temp as tyWithConstraints;
@@ -372,30 +378,26 @@ export const infer_type_of_ast = (ast : AstNode) => {
         fresh++;
         return fresh.toString();
     }
+
     const [ty, c] = infer_type(pickFresh)(ast, null);
 
-    const ss = unify(c);
+    return solve_for_type(ty, unify(c));
     
 
-    return [ty, ss]
-
 
 }
 
-
-const solve_constraints = (cs : constraint[], ss: substitution[]) : constraint[] => {
-    if (ss.length === 0) {
+const sub_into_rest = (cs : constraint[], s : substitution) => {
+    if (cs.length === 0) {
         return cs;
-    } else {
-        const firstS = ss[0];
-        const restS = ss.slice(1);
-        const temp = applySubstitutionToConstraints(cs, firstS);
-
-        return solve_constraints(temp, restS);
     }
+    const first = cs[0];
+
+    const left = first[0];
+    const right = first[1];
+    return [[applySubstitutionToType(left, s), applySubstitutionToType(right, s)], ...sub_into_rest(cs.slice(1), s)]
+
 }
-
-
 // generate sequence of substitutions
 const unify = (cs: constraint[]) : substitution[] => {
     if (cs.length === 0) {
@@ -410,7 +412,6 @@ const unify = (cs: constraint[]) : substitution[] => {
 
     if (isTypeEqual(left, right)) {
         return unify(rest)
-
     }
 
     const doesThisTyAppearInThatTy = (thisTy : ty, thatTy : ty) => {
@@ -429,25 +430,34 @@ const unify = (cs: constraint[]) : substitution[] => {
 
         return helper(thisTy, thatTy);
 
-
     }
 
+    // sanity check
+    const truecase1 = doesThisTyAppearInThatTy("2", "2");
+    const truecase2 = doesThisTyAppearInThatTy("2", ["1", ["bool", ["3", "2"]]]);
+    
+    if (!truecase1 || !truecase2) throw Error("ASSERT FAILURE IN unify");
+
+    const falsecase1 = doesThisTyAppearInThatTy("4", ["1", ["bool", ["3", "2"]]]); 
+    
+    if (falsecase1) throw Error("ASSERT FAILURE IN unify"); 
+    
 
     if (isTypeVariable(left) && !doesThisTyAppearInThatTy(left, right)) {
+        console.log(`we sub ${left} <- ${right}`)
         
-        return [[right, left], ...unify(rest)]
+        return [[right, left], ...unify(sub_into_rest(rest, [right, left]))]
 
     }
 
     if (isTypeVariable(right) && !doesThisTyAppearInThatTy(right, left)) {
+        console.log(`we sub ${right} <- ${left}`)
         
-        return [[left, right], ...unify(rest)]
+        return [[left, right], ...unify(sub_into_rest(rest, [left, right]))]
 
     }
 
-    
 
-        // TODO unify function types
     if (Array.isArray(left) && Array.isArray(right)) {
         const leftDom = left[0];
         const rightDom = right[0];
@@ -469,6 +479,14 @@ const unify = (cs: constraint[]) : substitution[] => {
 }
 
 
+const solve_for_type = (t : ty, ss : substitution[]) : ty => {
+    if (ss.length === 0) {
+        return t;
+    } 
+
+    return solve_for_type(applySubstitutionToType(t, ss[0]), ss.slice(1));
+}
+
 
 const applySubstitutionToType = (t : ty, s : substitution) : ty => {
     if (!s) {
@@ -489,32 +507,15 @@ const applySubstitutionToType = (t : ty, s : substitution) : ty => {
         if (isTypeEqual(t, substituteThis)) {
             return forThis;
         }
-        return substituteThis;
+
+        return t;
 
     }
+    const dom = t[0]
+    const range = t[1]
+    return [applySubstitutionToType(dom, s), applySubstitutionToType(range, s)]
 
-    throw Error("TyArr for apply substitution not implemented")
 }
-
-const applySubstitutionToConstraints = (cs : constraint[], s : substitution) : constraint[] => {
-
-    if (cs.length === 0) {
-        return cs;
-    }
-
-    const first = cs[0];
-    const rest = cs.slice(1);
-
-    const left = first[0];
-    const right = first[1];
-
-    const sLeft = applySubstitutionToType(left, s);
-    const sRight = applySubstitutionToType(right, s);
-
-    return [[sLeft, sRight], ...applySubstitutionToConstraints(rest, s)]
-}
-
-
 
 
 const isTypeEqual = (ty1: ty, ty2: ty) => {
