@@ -24,12 +24,9 @@ const isTypeVariable = (t : ty) => {
     return t !== "int" && t!== "bool" && t !== "unit";
 }
 
-const extend_type_environment = (bindings: [[string, ty]], e: TyEnv) => {
+const extend_type_environment = (binding: [string, ty], e: TyEnv) => {
     const new_frame = {}
-    for (let i = 0; i < bindings.length; i++) {
-        const [sym, ty] = bindings[i]; 
-        new_frame[sym] = ty
-    }
+    new_frame[binding[0]] = binding[1];
 
     return [new_frame, e] as TyEnv
 }
@@ -77,69 +74,69 @@ binop: (comp : BinopExpr, te : TyEnv) => {
 },
 
 
-lambda : (comp: LambdaExpr, te : TyEnv) => {
-    const { params: formals, formal_types, body } = comp;
-    const currFn = (formals: string[], formal_types: ty[], body, te : TyEnv) => {
+// lambda : (comp: LambdaExpr, te : TyEnv) => {
+//     const { params: formals, formal_types, body } = comp;
+//     const currFn = (formals: string[], formal_types: ty[], body, te : TyEnv) => {
 
-        if (formals.length !== formal_types.length) {
-            throw Error("MUST DECLARE TYPES FOR ALL PARAMS")
-        }
+//         if (formals.length !== formal_types.length) {
+//             throw Error("MUST DECLARE TYPES FOR ALL PARAMS")
+//         }
 
-        // function with empty params
-        if (formals.length === 0) {
-            return ["unit", type_of(body, te)];
-        }
+//         // function with empty params
+//         if (formals.length === 0) {
+//             return ["unit", type_of(body, te)];
+//         }
 
-        const extendedTe = extend_type_environment([[formals[0], formal_types[0]]], te);
-
-
-        // take the first argument
-        if (formals.length == 1) {
-            return [formal_types[0], type_of(body, extendedTe)];
-        }
-
-        return [formal_types[0], currFn(formals.slice(1), formal_types.slice(1), body, extendedTe)]
-    }
-    const resTy = currFn(formals, formal_types, body, te); 
-    return resTy
-
-},
-
-seq: (comp: Sequence, te : TyEnv) => {
-
-    // Hack
-    const stmts = comp.stmts.filter(comp => comp.kind !== "terminal");
-
-    const helper = (stmts: Statement[], env: TyEnv, prevType: ty) => {
-        if (stmts.length == 0) return prevType;
-
-        const curr = stmts[0];
+//         const extendedTe = extend_type_environment([[formals[0], formal_types[0]]], te);
 
 
-        const rest = stmts.slice(1);
-        if (curr.kind === "assign") {
-            const {name, decl_type, expr} = curr;
+//         // take the first argument
+//         if (formals.length == 1) {
+//             return [formal_types[0], type_of(body, extendedTe)];
+//         }
 
-            const expressionType = type_of(expr, env);
+//         return [formal_types[0], currFn(formals.slice(1), formal_types.slice(1), body, extendedTe)]
+//     }
+//     const resTy = currFn(formals, formal_types, body, te); 
+//     return resTy
+
+// },
+
+// seq: (comp: Sequence, te : TyEnv) => {
+
+//     // Hack
+//     const stmts = comp.stmts.filter(comp => comp.kind !== "terminal");
+
+//     const helper = (stmts: Statement[], env: TyEnv, prevType: ty) => {
+//         if (stmts.length == 0) return prevType;
+
+//         const curr = stmts[0];
 
 
-            if (decl_type !== undefined && !isTypeEqual(decl_type, expressionType)) {
-                throw Error(`Declared type of ${decl_type} did not match the expression type ${expressionType} for sym ${name}`)
-            } 
+//         const rest = stmts.slice(1);
+//         if (curr.kind === "assign") {
+//             const {name, decl_type, expr} = curr;
 
-            const extendedTe = extend_type_environment([[name, expressionType]], env);
-
-            return helper(rest, extendedTe, "unit")
-        }
+//             const expressionType = type_of(expr, env);
 
 
-        return helper(rest, env, type_of(curr, env))
-    } 
+//             if (decl_type !== undefined && !isTypeEqual(decl_type, expressionType)) {
+//                 throw Error(`Declared type of ${decl_type} did not match the expression type ${expressionType} for sym ${name}`)
+//             } 
+
+//             const extendedTe = extend_type_environment([[name, expressionType]], env);
+
+//             return helper(rest, extendedTe, "unit")
+//         }
+
+
+//         return helper(rest, env, type_of(curr, env))
+//     } 
     
 
-    return helper(stmts, te, "unit");
+//     return helper(stmts, te, "unit");
 
-},
+// },
 
 block : (comp : BlockStat, te : TyEnv) => {
     return type_of(comp.body, te);
@@ -223,10 +220,10 @@ ifstat: (comp : IfStat, te: TyEnv) => {
 }
 
 
-const infer_type_aux = (pickFresh : pickFreshTy) => ({
+const infer_type_aux = (pickFresh) => ({
     
 
-seq : (comp : Sequence) => {
+seq : (comp : Sequence, env) => {
     const {stmts} = comp;
     const stmtsWithoutTerminal = stmts.filter(s => s.kind !== "terminal")
 
@@ -234,11 +231,60 @@ seq : (comp : Sequence) => {
     
 },    
 
-intlit : (comp : IntLit) => ["int", []],
+intlit : (comp : IntLit, env) => ["int", []],
 
-boollit : (comp : BoolLit) => ["bool", []],
+boollit : (comp : BoolLit, env) => ["bool", []],
 
-cond : (comp: IfStat) : tyWithConstraints=> {
+name : (comp: Name, env) => {
+    return [look_up_type(comp.sym, env), []];
+},
+
+
+lambda : (comp : LambdaExpr, env) : tyWithConstraints => {
+
+    const {formals, body} = comp;
+
+    const currFn = (formals: [string, (ty | undefined)][], body, te : TyEnv) : tyWithConstraints => {
+        // function with empty params
+        if (formals.length === 0) {
+            return ["int", []];
+        }
+
+        const curr = formals[0];
+        const rest = formals.slice(1);
+
+        const currSym = curr[0];
+        const currTy = curr[1] === undefined 
+            ? pickFresh() 
+            : curr[1];
+
+        const extendedTe = extend_type_environment([currSym, currTy], env);
+        
+        if (formals.length === 1) {
+            if (body.kind === "block") {
+                throw Error("lambda block body not implemented");
+            }
+
+            // body is an expression
+            const [tyBody, cBody] = infer_type(pickFresh)(body, extendedTe);
+            
+            return [[currTy, tyBody], cBody];
+            
+        }
+        
+        const [tyRest, cRest] = currFn(rest, body, extendedTe);
+        const resTy = [currTy, tyRest] as TyArr;
+        return [resTy, cRest];
+        
+    }
+    
+    const resTy = currFn(formals, body, env);  
+
+    return resTy;
+
+},
+
+cond : (comp: IfStat, env) : tyWithConstraints=> {
     
     const resTy = pickFresh();
 
@@ -248,13 +294,13 @@ cond : (comp: IfStat) : tyWithConstraints=> {
         throw Error("Branch must have alt defined")
     }
 
-    const [tyPred, cPred] = infer_type(pickFresh)(pred);
-    const [tyConseq, cConseq] = infer_type(pickFresh)(conseq);
-    const [tyAlt, cAlt] = infer_type(pickFresh)(alt);
+    const [tyPred, cPred] = infer_type(pickFresh)(pred, env);
+    const [tyConseq, cConseq] = infer_type(pickFresh)(conseq, env);
+    const [tyAlt, cAlt] = infer_type(pickFresh)(alt, env);
 
 
     // get all the constraints from pred, conseq and alt, and enforce new constraints 
-    
+   
     const constraints = [
         ...cPred, ...cConseq, ...cAlt, // constraints from previous
         // constraints generated by me
@@ -266,9 +312,6 @@ cond : (comp: IfStat) : tyWithConstraints=> {
     const filteredConstraints = constraints.filter(c => c[0] !== c[1]) 
     const temp =  [resTy, filteredConstraints]
 
-    
-
-
 
     return temp as tyWithConstraints;
 
@@ -277,22 +320,28 @@ cond : (comp: IfStat) : tyWithConstraints=> {
 
 })
 
-const infer_type = (pickFresh) => (comp : AstNode) : tyWithConstraints => {
+const infer_type = (pickFresh) => (comp : AstNode, env : any) : tyWithConstraints => {
     if (!(comp.kind in infer_type_aux(pickFresh))) {
         throw Error(`type inference for ${comp.kind} not implemented`)
     }
 
-    return infer_type_aux(pickFresh)[comp.kind](comp);
+    return infer_type_aux(pickFresh)[comp.kind](comp, env);
 }
 
-export const type_inferencer = () => {
+export const infer_type_of_ast = (ast : AstNode) => {
 
     let fresh = 0;
     const pickFresh: pickFreshTy = () => {
         fresh++;
         return fresh.toString();
     }
-    return infer_type(pickFresh);
+    const [ty, c] = infer_type(pickFresh)(ast, null);
+
+    const ss = unify(c);
+
+
+
+    return [ty, c]
 
 
 }
