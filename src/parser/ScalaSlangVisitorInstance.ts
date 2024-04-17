@@ -231,6 +231,7 @@ export class ScalaSlangVisitorInstance
         return {
             kind: "lambda",
             formals,
+            body
         } as LambdaExpr
     }
 
