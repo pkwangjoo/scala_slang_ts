@@ -18,17 +18,17 @@ function run(program) {
 
 const tests = allTests;
 for (let i = 0; i < tests.length; i++) {
-  console.log("running test: ", tests[i]['name']);
+  console.log("===== Running test: ", tests[i]['name']);
   try {
     const res = run(tests[i]['test']);
     if (res === tests[i]['expected']) {
-      console.log(`test ${tests[i]['name']} passed`);
+      console.log(`===== Test ${tests[i]['name']} passed`);
     } else {
-      console.log(`test ${tests[i]['name']} failed: expected ${tests[i]['expected']} but got ${res}`);
+      console.log(`===== Test ${tests[i]['name']} failed: expected ${tests[i]['expected']} but got ${res}`);
     }
   } catch (e) {
     if (e === tests[i]['expected']) {
-      console.log(`test ${tests[i]['name']} passed`);
+      console.log(`===== Test ${tests[i]['name']} passed`);
     } else {
       throw e;
     }

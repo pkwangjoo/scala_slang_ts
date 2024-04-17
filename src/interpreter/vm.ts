@@ -21,7 +21,6 @@ export class VirtualMachine {
 
   private globalEnvironment: Environment = {
     frames: [
-      // TODO: Add built-in functions to the global environment
     ],
   }
 
@@ -123,7 +122,7 @@ export class VirtualMachine {
       return
     }
     if (instruction.kind === 'JOF') {
-      if (this.popOperand() === MemoryManager.False_tag) {
+      if (this.popOperand() === this.mem.False) {
         this.programCounter = instruction.addr
       }
       return
@@ -135,7 +134,6 @@ export class VirtualMachine {
     if (instruction.kind === 'CALL') {
       const arity = instruction.arity
       const fun = this.operandStack.slice(-arity - 1)[0]
-      // TODO: handle any built-in functions
       const newProgramCounter = this.mem.heapGetClosurePc(fun)
       const newFrame = this.mem.heapAllocateFrame(arity)
       for (let i = arity - 1; i >= 0; i--) {
