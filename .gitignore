@@ -1,7 +1,7 @@
 node_modules
 dist
 
-src/parser/*
-!src/parser/parser.ts
-!src/parser/ScalaSlang.g4
-!src/parser/ScalaSlangVisitorInstance.ts
+# src/parser/*
+# !src/parser/parser.ts
+# !src/parser/ScalaSlang.g4
+# !src/parser/ScalaSlangVisitorInstance.ts
