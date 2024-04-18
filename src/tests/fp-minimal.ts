@@ -1,5 +1,4 @@
 import { compileIntoVML } from "../interpreter/compiler"
-import { compile_ast_to_term } from "../interpreter/lambda_compiler";
 import { infer_type_of_ast, typecheck } from "../interpreter/typechecker"
 import { parse } from "../parser/parser"
 
@@ -102,8 +101,15 @@ true ? 4 : 5;
 export const fp_min_tc_inf_1 = () => {
     const ast = parse(tc_inf_1);
     const ifStat = (ast as Sequence).stmts[0];
-    console.log(ifStat)
-    console.log(infer_type_of_ast(ifStat))
+    try {
+        infer_type_of_ast(ifStat);
+        console.log(tc_inf_1)
+        console.log("pass")
+        return true;
+    } catch {
+        console.log("fail")
+        return false; 
+    }
 };
 
 // parser limitation, need to indicate brackets
@@ -117,8 +123,16 @@ true
 export const fp_min_tc_inf_2 = () => {
     const ast = parse(tc_inf_2);
     const ifStat = (ast as Sequence).stmts[0];
-    console.log(ifStat)
-    console.log(infer_type_of_ast(ifStat))
+    try {
+        infer_type_of_ast(ifStat);
+        console.log(tc_inf_2)
+        console.log("pass")
+        return true;
+    } catch {
+        console.log("fail")
+        return false; 
+    }
+
 };
 
 
@@ -128,8 +142,15 @@ const tc_inf_3 =  `
 export const fp_min_tc_inf_3 = () => {
     const ast = parse(tc_inf_3);
     const comp = (ast as Sequence).stmts[0];
-    console.log(comp)
-    console.log(infer_type_of_ast(comp))
+    try {
+        infer_type_of_ast(comp);
+        console.log(tc_inf_3)
+        console.log("pass")
+        return true;
+    } catch {
+        console.log("fail")
+        return false; 
+    }
 };
 
 
@@ -139,9 +160,95 @@ const tc_inf_4 =  `
 export const fp_min_tc_inf_4 = () => {
     const ast = parse(tc_inf_4);
     const comp = (ast as Sequence).stmts[0];
-    console.log(JSON.stringify(comp, null,2 ))
+    try {
+        infer_type_of_ast(comp);
+        console.log(tc_inf_4)
+        console.log("pass")
+        return true;
+    } catch {
+        console.log(tc_inf_4)
+        console.log("fail")
+        return false; 
+    }
 
-    console.log(JSON.stringify(infer_type_of_ast(comp)))
+};
+
+const tc_inf_5 =  `
+1 + 2;
+`
+export const fp_min_tc_inf_5 = () => {
+    const ast = parse(tc_inf_5);
+    const comp = (ast as Sequence).stmts[0];
+    try {
+        infer_type_of_ast(comp);
+        console.log(tc_inf_5)
+        console.log("pass")
+        return true;
+    } catch (error) {
+        console.log(tc_inf_5)
+        console.log("testcase fail " + error)
+        return false; 
+    }
+
+};
+
+
+const tc_inf_6 =  `
+(x) => x + false;
+`
+export const fp_min_tc_inf_6 = () => {
+    const ast = parse(tc_inf_6);
+    const comp = (ast as Sequence).stmts[0];
+    try {
+        infer_type_of_ast(comp);
+        console.log(tc_inf_6)
+        console.log("pass")
+        return true;
+    } catch (error) {
+        console.log(tc_inf_6)
+        console.log("testcase fail " + error)
+        return false; 
+    }
+
+};
+
+const tc_inf_7 =  `
+(x) => (x + 1 > 3) == false;
+`
+export const fp_min_tc_inf_7 = () => {
+    const ast = parse(tc_inf_7);
+    const comp = (ast as Sequence).stmts[0];
+    try {
+        infer_type_of_ast(comp);
+        console.log(tc_inf_7)
+        console.log("pass")
+        return true;
+    } catch (error) {
+        console.log(tc_inf_7)
+        console.log("testcase fail " + error)
+        return false; 
+    }
+
+};
+
+const tc_inf_8 =  `
+(x, y, z) => (x + y) > (1 + z) ? 32 : 33;
+`
+export const fp_min_tc_inf_8 = () => {
+    const ast = parse(tc_inf_8);
+    const comp = (ast as Sequence).stmts[0];
+    try {
+        console.log(comp)
+        infer_type_of_ast(comp);
+        console.log(tc_inf_8)
+        console.log("pass")
+        return true;
+    } catch (error) {
+        console.log(tc_inf_8)
+        console.log("fail " + error)
+        return false; 
+    }
+
 };
 
 

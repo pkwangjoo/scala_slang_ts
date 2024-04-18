@@ -16,6 +16,21 @@ type tyWithConstraints = [ty, constraint[]]
 // substitute first to second
 type substitution = [ty, ty] | []
 
+const GLOBAL_FRAME = {
+    "(+)" : ["int", ["int", "int"]],
+    "(-)" : ["int", ["int", "int"]],
+    "(*)" : ["int", ["int", "int"]],
+    "(/)" : ["int", ["int", "int"]],
+    "(<=)" : ["int", ["int", "bool"]],
+    "(>=)" : ["int", ["int", "bool"]],
+    "(<)" : ["int", ["int", "bool"]],
+    "(>)" : ["int", ["int", "bool"]],
+    "(==)" : ["a", ["b", "bool"]]
+}
+
+const GLOBAL_CONSTRAINTS_MAP = {
+    "(==)" : ["a", "b"]
+}
 
 
 
@@ -233,12 +248,34 @@ seq : (comp : Sequence, env) => {
     
 },    
 
+binop: (comp : BinopExpr, env) => {
+    const {operator, operand1, operand2} = comp;
+    // convert to fun app
+    
+    const toFunapp = {
+        kind : "funapp",
+        fun : {
+            kind : "name",
+            sym : "(" + operator + ")"
+        },
+        args: [operand1, operand2]
+    } as FunAppExpr
+
+    return infer_type(pickFresh)(toFunapp, env);
+
+},
+
 intlit : (comp : IntLit, env) => ["int", []],
 
 boollit : (comp : BoolLit, env) => ["bool", []],
 
 name : (comp: Name, env) => {
-    return [look_up_type(comp.sym, env), []];
+    return [
+        look_up_type(comp.sym, env), 
+        (comp.sym in GLOBAL_CONSTRAINTS_MAP 
+            ? GLOBAL_CONSTRAINTS_MAP[comp.sym]
+            : [])
+        ];
 },
 
 
@@ -246,47 +283,48 @@ lambda : (comp : LambdaExpr, env) : tyWithConstraints => {
 
     const {formals, body} = comp;
 
-    const currFn = (formals: [string, (ty | undefined)][], body, env) : tyWithConstraints => {
-        // function with empty params
-        if (formals.length === 0) {
-            throw Error("Function with 0 param not implemented!")
+    const currFn = (formals, body) => {
+        if (formals.length === 1) {
+            if (body.kind === "block") {
+                throw Error("lambda block body not implemented");
+            }
+            return [formals[0], body]
         }
 
-        const curr = formals[0];
-        const rest = formals.slice(1);
+        return [formals[0], currFn(formals.slice(1), body)];
+    }
 
-        const currSym = curr[0];
-        const currTy = curr[1] === undefined 
+    const lambda_aux = (fn, env) : tyWithConstraints => {
+
+        const dom = fn[0];
+        const range = fn[1];
+        const domSym = dom[0];
+        const domTy = dom[1] === undefined 
             ? pickFresh() 
-            : curr[1];
+            : dom[1]; 
+
+        const extendedTe = extend_type_environment([domSym, domTy] ,env);
 
 
-
-        const extendedTe = extend_type_environment([currSym, currTy],env);
-        
-        if (formals.length === 1) {
+        if (!Array.isArray(range)) { // we have reached the body
             if (body.kind === "block") {
                 throw Error("lambda block body not implemented");
             }
 
             // body is an expression
-            const [tyBody, cBody] = infer_type(pickFresh)(body, extendedTe);
+            const [tyBody, cBody] = infer_type(pickFresh)(range, extendedTe);
             
-            return [[currTy, tyBody], cBody];
+            return [[domTy, tyBody], cBody];
             
         }
-        
-        const [tyRest, cRest] = currFn(rest, body, extendedTe);
-        const resTy = [currTy, tyRest] as TyArr;
-        return [resTy, cRest];
-        
+
+        const [tyRest, cRest] = lambda_aux(range, extendedTe);
+        return [[domTy, tyRest], cRest];
+
+
     }
-    
-    const resTy = currFn(formals, body, env);
 
-
-
-    return resTy;
+    return lambda_aux(currFn(formals, body), env)
 
 },
 
@@ -294,7 +332,6 @@ funapp : (comp : FunAppExpr, env) : tyWithConstraints=> {
 
     const {fun, args} = comp;
 
-    console.log("funapp!", fun, args)
 
     const funapp_aux = (tyFun, cFun, args) => {
 
@@ -321,7 +358,6 @@ funapp : (comp : FunAppExpr, env) : tyWithConstraints=> {
     }
 
     const [tyFun, cFun] = infer_type(pickFresh)(fun, env);
-    console.log("fun type!", tyFun, cFun);
     return funapp_aux(tyFun, cFun, args);
 
 
@@ -379,10 +415,9 @@ export const infer_type_of_ast = (ast : AstNode) => {
         return fresh.toString();
     }
 
-    const [ty, c] = infer_type(pickFresh)(ast, null);
+    const [ty, c] = infer_type(pickFresh)(ast, [GLOBAL_FRAME, null]);
 
     return solve_for_type(ty, unify(c));
-    
 
 
 }
@@ -400,6 +435,8 @@ const sub_into_rest = (cs : constraint[], s : substitution) => {
 }
 // generate sequence of substitutions
 const unify = (cs: constraint[]) : substitution[] => {
+    // console.log(cs);
+
     if (cs.length === 0) {
         return []
     }
@@ -444,14 +481,12 @@ const unify = (cs: constraint[]) : substitution[] => {
     
 
     if (isTypeVariable(left) && !doesThisTyAppearInThatTy(left, right)) {
-        console.log(`we sub ${left} <- ${right}`)
         
         return [[right, left], ...unify(sub_into_rest(rest, [right, left]))]
 
     }
 
     if (isTypeVariable(right) && !doesThisTyAppearInThatTy(right, left)) {
-        console.log(`we sub ${right} <- ${left}`)
         
         return [[left, right], ...unify(sub_into_rest(rest, [left, right]))]
 
@@ -471,8 +506,7 @@ const unify = (cs: constraint[]) : substitution[] => {
             ]);
 
     }
-
-    throw Error("Error in unify")
+     throw Error("Error in unify")
 
 
 
