@@ -1,5 +1,5 @@
 import { parse } from '../parser/parser'
-import { allTests } from '../tests/ivan-tests'
+import { allTests } from '../tests/allTests'
 import { compileIntoVML } from './compiler'
 import { typecheck } from './typechecker'
 import { VirtualMachine } from './vm'
