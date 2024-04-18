@@ -116,7 +116,7 @@ export const fp_min_tc_inf_1 = () => {
 const tc_inf_2 = `
 true 
     ? 3
-    : true ? 4 : false
+    : true ? 4 : 2;
         
 `
 
@@ -129,6 +129,7 @@ export const fp_min_tc_inf_2 = () => {
         console.log("pass")
         return true;
     } catch {
+        console.log(tc_inf_2)
         console.log("fail")
         return false; 
     }
@@ -137,7 +138,7 @@ export const fp_min_tc_inf_2 = () => {
 
 
 const tc_inf_3 =  `
-(x) => true ? x : 3;
+(x, y) => y ? x : 3;
 `
 export const fp_min_tc_inf_3 = () => {
     const ast = parse(tc_inf_3);
@@ -155,7 +156,7 @@ export const fp_min_tc_inf_3 = () => {
 
 
 const tc_inf_4 =  `
-((x) => (y) => (z) => x ? y : z)(true)(2)(false);
+((x) => (y) => (z) => x ? y : z)(true)(2)(1);
 `
 export const fp_min_tc_inf_4 = () => {
     const ast = parse(tc_inf_4);
@@ -232,7 +233,7 @@ export const fp_min_tc_inf_7 = () => {
 };
 
 const tc_inf_8 =  `
-(x, y, z) => (x + y) > (1 + z) ? 32 : 33;
+(x, y, z) => (x + y) > (y && z) ? 32 : 33;
 `
 export const fp_min_tc_inf_8 = () => {
     const ast = parse(tc_inf_8);
