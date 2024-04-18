@@ -15,8 +15,7 @@ f.close()
 def intro():
     print("Scala Sublanguage Repl v1 by Kwangjoo and Ivan")
     print("Type 'exit' to exit the interpreter")
-    print("Type 'clear' to clear the program")
-
+    print("Type 'clear' to clear the program\n")
 intro()
 
 def count_brackets(program):
@@ -50,13 +49,20 @@ def input_loop():
             print("Interpreter restarted.")
             intro()
             continue
+        
+        if is_cont and program == "":
+            program = ""
 
         full_program += f"\n{program}"
         diff, max_diff = count_brackets(full_program)
         is_cont = diff > 0
 
         if is_cont:
-            continue
+            if program == "":
+                # break the continuation
+                is_cont = False
+            else:
+                continue
 
         with open(temp_file, 'w') as f:
             f.write(full_program)
