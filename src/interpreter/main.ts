@@ -1,38 +1,61 @@
-import { parse } from "../parser/parser";
-import { test_case_5 } from "../tests/parser-test";
-import { compileIntoVML } from "./compiler";
-import { type_of, typecheck } from "./typechecker";
-import { VirtualMachine } from "./vm";
-import { test1, test2, test3, test4 } from "../tests/tests";
-import { allTests } from "../tests/ivan-tests";
+console.log('main.ts')
 
-function run(program) {
-  const ast = parse(program);
-  // console.log("received ast as: ", JSON.stringify(ast as AstNode, null, 2));
-  // disable typechecking by commenting this line
-  // typecheck(ast)
-  const is = compileIntoVML(ast as AstNode);
-  // console.log(`instructions: ${JSON.stringify(is, null, 2)}`)
-  const vm = new VirtualMachine(is);
-  return vm.run();
+import { parse } from '../parser/parser'
+import { allTests } from '../tests/ivan-tests'
+import { compileIntoVML } from './compiler'
+import { type_of, typecheck } from './typechecker'
+import { VirtualMachine } from './vm'
+import * as fs from 'fs'
+
+function runWithFile(filePath: string) {
+  try {
+    // Read the contents of the file synchronously
+    const program = fs.readFileSync(filePath, 'utf8')
+    const ast = parse(program)
+    // Disable typechecking by commenting this line
+    // typecheck(ast) // ! TODO uncomment this line
+    const is = compileIntoVML(ast)
+    const vm = new VirtualMachine(is)
+    return vm.run()
+  } catch (error) {
+    console.error('Error:', error)
+  }
 }
 
-const tests = allTests;
-for (let i = 0; i < tests.length; i++) {
-  console.log("===== Running test: ", tests[i]['name']);
-  try {
-    const res = run(tests[i]['test']);
-    if (res === tests[i]['expected']) {
-      console.log(`===== Test ${tests[i]['name']} passed`);
-    } else {
-      console.log(`===== Test ${tests[i]['name']} failed: expected ${tests[i]['expected']} but got ${res}`);
-    }
-  } catch (e) {
-    if (e === tests[i]['expected']) {
-      console.log(`===== Test ${tests[i]['name']} passed`);
-    } else {
-      throw e;
+// Separate test logic into a function
+function runTests() {
+  const tests = allTests
+  // Run each test
+  for (let i = 0; i < tests.length; i++) {
+    console.log('===== Running test: ', tests[i]['name'])
+    try {
+      const res = runWithFile(tests[i]['test'])
+      if (res === tests[i]['expected']) {
+        console.log(`===== Test ${tests[i]['name']} passed`)
+      } else {
+        console.log(
+          `===== Test ${tests[i]['name']} failed: expected ${tests[i]['expected']} but got ${res}`
+        )
+      }
+    } catch (e) {
+      if (e === tests[i]['expected']) {
+        console.log(`===== Test ${tests[i]['name']} passed`)
+      } else {
+        throw e
+      }
     }
   }
 }
 
+console.error('===== Running tests =====')
+
+// Check if the script is run from the command line
+if (require.main === module) {
+  // If run from command line, expect a file path argument
+  const filePath = process.argv[2]
+  if (!filePath) {
+    console.error('Please provide a file path as an argument.')
+    process.exit(1)
+  }
+  console.log(runWithFile(filePath))
+}
