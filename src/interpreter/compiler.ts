@@ -27,7 +27,7 @@ const value_index = (frame: any, x: any) => {
       if (frame[i] === x) return i
     }
     return -1;
-  }
+}
 
 const compile_time_environment_position = (env: any, x: any) : [number, number] => {
     let frame_index = env.length
@@ -94,6 +94,7 @@ const compile_comp: CompileFunctions = {
             compile(comp.operand2, ce);
             instrs[wc++] = { kind : 'BINOP' , operator: comp.operator};
         },
+
     cond: 
         (comp: CondExpr | IfStat, ce: any) => {
             compile(comp.pred, ce)
@@ -105,6 +106,7 @@ const compile_comp: CompileFunctions = {
             if (comp.alt) compile(comp.alt, ce)
             instrs[slot_for_GOTO] = {kind: "GOTO", addr: wc}
         },
+
     assign:
         // store precomputed position info in ASSIGN instruction
         (comp : AssignmentStat, ce : any) => {
@@ -117,7 +119,7 @@ const compile_comp: CompileFunctions = {
     lambda:
         (comp: LambdaExpr, ce : any) => {
             instrs[wc++] = {kind: 'LDF', 
-                            prms: comp.params,
+                            prms: comp.formals.map(f => f[0]),
                             addr: wc + 1};
             // jump over the body of the lambda expression
             const slot_for_GOTO = wc++;
@@ -127,7 +129,7 @@ const compile_comp: CompileFunctions = {
             // extend compile-time environment
             compile(comp.body,
     		        compile_time_environment_extend(
-    		            comp.params, ce))
+    		            comp.formals.map(f => f[0]), ce))
             instrs[wc++] = {kind: 'LDC', val: undefined}
             instrs[wc++] = {kind: 'RESET'}
             instrs[slot_for_GOTO] = {kind: "GOTO", addr: wc}
