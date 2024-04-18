@@ -2,7 +2,7 @@ import os
 import subprocess
 
 full_program = ""
-last_good_program = None
+last_good_program = ""
 last_good_file = None
 is_cont = False
 
@@ -13,18 +13,33 @@ with open(temp_file, 'w') as f:
 f.close()
 
 def intro():
-    print("Scala Sublanguage Interpreter v1 by Kwangjoo and Ivan")
+    print("Scala Sublanguage Repl v1 by Kwangjoo and Ivan")
     print("Type 'exit' to exit the interpreter")
     print("Type 'clear' to clear the program")
-    print("Type '...' to continue the program on the next line")
 
 intro()
+
+def count_brackets(program):
+    brackets = {'(': 0, '[': 0, '{': 0, ')': 0, ']': 0, '}': 0}
+
+    for char in program:
+        if char in brackets:
+            brackets[char] += 1
+
+    max_diff = max(abs(brackets['('] - brackets[')']), abs(brackets['['] - brackets[']']), abs(brackets['{'] - brackets['}']))
+
+
+    open_count = brackets['('] + brackets['['] + brackets['{']
+    close_count = brackets[')'] + brackets[']'] + brackets['}']
+
+    return any([open_count > close_count, brackets['('] > brackets[')'], brackets['['] > brackets[']'], brackets['{'] > brackets['}']]), max_diff
 
 def input_loop():
     global full_program, last_good_program, is_cont
     while True:
-        program = input(">>> " if not is_cont else "... ")
-        
+        prompt = ">>> " if not is_cont else "... " + 2 * max_diff * " "
+        program = input(prompt)
+
         if program == 'exit':
             break  # Exit the interpreter
         
@@ -36,15 +51,12 @@ def input_loop():
             intro()
             continue
 
-        if program.endswith("..."):
-            program = program[:-3]
-            full_program += f"\n{program}"
-            is_cont = True
-            continue
-        
         full_program += f"\n{program}"
-        
-        is_cont = False
+        diff, max_diff = count_brackets(full_program)
+        is_cont = diff > 0
+
+        if is_cont:
+            continue
 
         with open(temp_file, 'w') as f:
             f.write(full_program)
@@ -57,7 +69,7 @@ def input_loop():
             print(e)
             full_program = last_good_program
             with open(temp_file, 'w') as f:
-                f.write(last_good_program)
+                f.write(last_good_program) if last_good_program is not None else f.write("")
 
 
 if __name__ == "__main__":
