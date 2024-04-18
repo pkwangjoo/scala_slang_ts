@@ -24,7 +24,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const parser_1 = require("../parser/parser");
-const ivan_tests_1 = require("../tests/ivan-tests");
 const compiler_1 = require("./compiler");
 const vm_1 = require("./vm");
 const fs = __importStar(require("fs"));
@@ -42,31 +41,6 @@ function runWithFile(filePath) {
     catch (error) {
         console.error('Error:', error);
         process.exit(1);
-    }
-}
-// Separate test logic into a function
-function runTests() {
-    const tests = ivan_tests_1.allTests;
-    // Run each test
-    for (let i = 0; i < tests.length; i++) {
-        console.log('===== Running test: ', tests[i]['name']);
-        try {
-            const res = runWithFile(tests[i]['test']);
-            if (res === tests[i]['expected']) {
-                console.log(`===== Test ${tests[i]['name']} passed`);
-            }
-            else {
-                console.log(`===== Test ${tests[i]['name']} failed: expected ${tests[i]['expected']} but got ${res}`);
-            }
-        }
-        catch (e) {
-            if (e === tests[i]['expected']) {
-                console.log(`===== Test ${tests[i]['name']} passed`);
-            }
-            else {
-                throw e;
-            }
-        }
     }
 }
 const filePath = process.argv[2];
