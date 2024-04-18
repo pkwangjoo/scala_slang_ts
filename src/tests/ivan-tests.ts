@@ -17,6 +17,28 @@ a + b;
   expected: 7
 };
 
+export const testBlockDeclarations = {
+  name: "Block Declarations",
+  test: `
+{
+  val a = 3;
+}
+val a = 6;
+{
+  val b = 4;
+  val c = 5;
+}
+{
+  val b = 2;
+  {
+    val a = 10;
+  }
+  val result = a + b;
+}
+`,
+  expected: 8
+};
+
 export const testFunctionDefinition = {
   name: "Function Definition",
   test: `
@@ -231,6 +253,7 @@ export const testCs1101sR3 = { // Failing
 export const allTests = [
   testSingleAssignment,
   testMultipleAssignment,
+  testBlockDeclarations,
   testFunctionDefinition,
   testFunctionRecursive,
   testFunctionNested,

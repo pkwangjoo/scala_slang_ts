@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.allTests = exports.testOptionalTypeAnnotationWithFunction = exports.testOptionalTypeAnnotation = exports.testLogicalOperatorsLong = exports.testLogicalOperatorsComplex = exports.testLogicalOperators = exports.testCs1101sR3 = exports.testConditionalExpressionWithRecursiveFunction = exports.testConditionalExpressionWithFunction = exports.testConditionalExpression = exports.testIfElse = exports.testHigherOrder = exports.testLambdaExpressionNested = exports.testLambdaExpression = exports.testFunctionRecursive = exports.testFunctionNested = exports.testFunctionDefinition = exports.testMultipleAssignment = exports.testSingleAssignment = void 0;
+exports.allTests = exports.testCs1101sR3 = exports.testOptionalTypeAnnotationWithFunction = exports.testOptionalTypeAnnotation = exports.testLogicalOperatorsLong = exports.testLogicalOperatorsComplex = exports.testLogicalOperators = exports.testConditionalExpressionWithRecursiveFunction = exports.testConditionalExpressionWithFunction = exports.testConditionalExpression = exports.testIfElse = exports.testHigherOrder = exports.testLambdaExpressionNested = exports.testLambdaExpression = exports.testFunctionRecursive = exports.testFunctionNested = exports.testFunctionDefinition = exports.testBlockDeclarations = exports.testMultipleAssignment = exports.testSingleAssignment = void 0;
 exports.testSingleAssignment = {
     name: "Single Assignment",
     test: `
@@ -17,6 +17,27 @@ val b = 4;
 a + b;
 `,
     expected: 7
+};
+exports.testBlockDeclarations = {
+    name: "Block Declarations",
+    test: `
+{
+  val a = 3;
+}
+val a = 6;
+{
+  val b = 4;
+  val c = 5;
+}
+{
+  val b = 2;
+  {
+    val a = 10;
+  }
+  val result = a + b;
+}
+`,
+    expected: 8
 };
 exports.testFunctionDefinition = {
     name: "Function Definition",
@@ -145,25 +166,6 @@ exports.testConditionalExpressionWithRecursiveFunction = {
 `,
     expected: 8
 };
-exports.testCs1101sR3 = {
-    name: "CS1101S Reflection 3 Q1",
-    test: `
-  val x = 5;
-  def f(g) = {
-      val x = 3;
-      return x => {
-          return x + g(x);
-      };
-  }
-  def g(f, y) = {
-      val h = (y, f) => {return y(f);};
-      return h(f, y);
-  }
-  g(y => {return y + 2;}, x) + 1;
-
-`,
-    expected: 8
-};
 exports.testLogicalOperators = {
     name: "Logical Operators",
     test: `
@@ -213,9 +215,29 @@ exports.testOptionalTypeAnnotationWithFunction = {
 `,
     expected: 8
 };
+exports.testCs1101sR3 = {
+    name: "CS1101S Reflection 3 Q1",
+    test: `
+  val x = 5;
+  def f(g) = {
+      val x = 3;
+      return x => {
+          return x + (g(x));
+      };
+  }
+  def g(f, y) = {
+      val h = (y, f) => {return y(f);};
+      return h(f, y);
+  }
+  (g(y => {return y + 2;}, x)) + 1;
+
+`,
+    expected: 8
+};
 exports.allTests = [
     exports.testSingleAssignment,
     exports.testMultipleAssignment,
+    exports.testBlockDeclarations,
     exports.testFunctionDefinition,
     exports.testFunctionRecursive,
     exports.testFunctionNested,

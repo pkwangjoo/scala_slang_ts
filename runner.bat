@@ -1,3 +1,3 @@
 @echo off
-node dist\src\interpreter\test.js
+node dist\src\interpreter\testRunner.js
 pause
