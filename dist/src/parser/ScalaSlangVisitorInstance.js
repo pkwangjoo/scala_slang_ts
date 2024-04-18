@@ -61,10 +61,10 @@ class ScalaSlangVisitorInstance extends AbstractParseTreeVisitor_1.AbstractParse
         return this.visit(block);
     }
     visitBlock(ctx) {
-        console.log("visitblock");
+        // console.log("visitblock")
         const stmts = ctx.getRuleContexts(ScalaSlangParser_1.StatContext)
             .map(r => {
-            console.log(r.text);
+            // console.log(r.text)
             return this.visit(r);
         });
         return {
@@ -104,7 +104,7 @@ class ScalaSlangVisitorInstance extends AbstractParseTreeVisitor_1.AbstractParse
     }
     visitReturnstatement(ctx) {
         const expr = this.visit(ctx.expr());
-        console.log(expr);
+        // console.log(expr);
         return {
             kind: "ret",
             expr

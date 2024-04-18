@@ -1,5 +1,3 @@
-console.log('main.ts')
-
 import { parse } from '../parser/parser'
 import { allTests } from '../tests/ivan-tests'
 import { compileIntoVML } from './compiler'
@@ -46,8 +44,6 @@ function runTests() {
     }
   }
 }
-
-console.error('===== Running tests =====')
 
 // Check if the script is run from the command line
 if (require.main === module) {

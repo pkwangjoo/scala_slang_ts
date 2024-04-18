@@ -79,10 +79,10 @@ export class ScalaSlangVisitorInstance
     }
 
     visitBlock(ctx : BlockContext) : BlockStat {
-        console.log("visitblock")
+        // console.log("visitblock")
         const stmts = ctx.getRuleContexts(StatContext)
         .map(r => {
-            console.log(r.text)
+            // console.log(r.text)
             return this.visit(r) as Statement
         });
         return {
@@ -131,7 +131,7 @@ export class ScalaSlangVisitorInstance
 
     visitReturnstatement(ctx: ReturnstatementContext) : RetStat {
         const expr = this.visit(ctx.expr()) as Expression;
-        console.log(expr);
+        // console.log(expr);
 
         return {
             kind : "ret",

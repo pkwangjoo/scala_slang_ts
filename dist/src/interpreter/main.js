@@ -23,7 +23,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-console.log('main.ts');
 const parser_1 = require("../parser/parser");
 const ivan_tests_1 = require("../tests/ivan-tests");
 const compiler_1 = require("./compiler");
@@ -69,7 +68,6 @@ function runTests() {
         }
     }
 }
-console.error('===== Running tests =====');
 // Check if the script is run from the command line
 if (require.main === module) {
     // If run from command line, expect a file path argument
