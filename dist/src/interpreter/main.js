@@ -41,6 +41,7 @@ function runWithFile(filePath) {
     }
     catch (error) {
         console.error('Error:', error);
+        process.exit(1);
     }
 }
 // Separate test logic into a function
@@ -68,14 +69,11 @@ function runTests() {
         }
     }
 }
-// Check if the script is run from the command line
-if (require.main === module) {
-    // If run from command line, expect a file path argument
-    const filePath = process.argv[2];
-    if (!filePath) {
-        console.error('Please provide a file path as an argument.');
-        process.exit(1);
-    }
-    console.log(runWithFile(filePath));
+const filePath = process.argv[2];
+if (!filePath) {
+    console.error('Please provide a file path as an argument.');
+    process.exit(1);
 }
+console.log(runWithFile(filePath));
+// runTests()
 //# sourceMappingURL=main.js.map

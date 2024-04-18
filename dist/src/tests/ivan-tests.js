@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.allTests = exports.testNameWithNumber = exports.testFunctionRecursive = exports.testFunctionNested = exports.testFunctionDefinition = exports.testMultipleAssignment = exports.testSingleAssignment = void 0;
+exports.allTests = exports.testParseFail = exports.testNameWithNumber = exports.testFunctionRecursive = exports.testFunctionNested = exports.testFunctionDefinition = exports.testMultipleAssignment = exports.testSingleAssignment = void 0;
 exports.testSingleAssignment = {
     name: "Single Assignment",
     test: `
@@ -68,12 +68,19 @@ b;
 `,
     expected: 4
 };
+exports.testParseFail = {
+    name: "Test parse fail",
+    test: `
+  hello world
+  `,
+};
 exports.allTests = [
     // testSingleAssignment,
     // testMultipleAssignment,
     // testFunctionDefinition,
     // testFunctionRecursive,
     // testFunctionNested,
-    exports.testNameWithNumber,
+    // testNameWithNumber,
+    exports.testParseFail,
 ];
 //# sourceMappingURL=ivan-tests.js.map

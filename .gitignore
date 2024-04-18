@@ -4,3 +4,4 @@ node_modules
 # !src/parser/parser.ts
 # !src/parser/ScalaSlang.g4
 # !src/parser/ScalaSlangVisitorInstance.ts
+temp.txt

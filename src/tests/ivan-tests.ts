@@ -71,11 +71,19 @@ b;
   expected: 4
 };
 
+export const testParseFail = {
+  name: "Test parse fail",
+  test: `
+  hello world
+  `,
+}
+
 export const allTests = [
   // testSingleAssignment,
   // testMultipleAssignment,
   // testFunctionDefinition,
   // testFunctionRecursive,
   // testFunctionNested,
-  testNameWithNumber,
+  // testNameWithNumber,
+  testParseFail,
 ];
