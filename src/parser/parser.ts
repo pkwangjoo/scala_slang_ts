@@ -24,7 +24,12 @@ export const parse = (progString : string) : AstNode => {
     
     let visitor = new ScalaSlangVisitorInstance();
 
-    return visitor.visit(tree) as AstNode;
+    try {
+      return visitor.visit(tree) as AstNode;
+    } catch (e) {
+      console.error("The above led to a parsing error.");
+      process.exit(1);
+    }
 }
 
 

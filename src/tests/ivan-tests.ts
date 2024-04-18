@@ -71,12 +71,17 @@ b;
   expected: 4
 };
 
-export const testParseFail = {
-  name: "Test parse fail",
+export const testArity = {
+  name: "Test with arity",
   test: `
-  hello world
-  `,
+def add(x: Int, y: Int) = {
+  return x + y;
 }
+val result = add(3); // arity mismatch
+result;
+`,
+  expected: "Arity mismatch in function call."
+};
 
 export const allTests = [
   // testSingleAssignment,
@@ -85,5 +90,5 @@ export const allTests = [
   // testFunctionRecursive,
   // testFunctionNested,
   // testNameWithNumber,
-  testParseFail,
+  testArity,
 ];

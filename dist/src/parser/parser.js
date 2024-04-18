@@ -12,7 +12,13 @@ const parse = (progString) => {
     let parser = new ScalaSlangParser_1.ScalaSlangParser(tokenStream);
     let tree = parser.prog();
     let visitor = new ScalaSlangVisitorInstance_1.ScalaSlangVisitorInstance();
-    return visitor.visit(tree);
+    try {
+        return visitor.visit(tree);
+    }
+    catch (e) {
+        console.error("The above led to a parsing error.");
+        process.exit(1);
+    }
 };
 exports.parse = parse;
 //# sourceMappingURL=parser.js.map

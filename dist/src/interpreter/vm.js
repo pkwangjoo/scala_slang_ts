@@ -48,10 +48,16 @@ class VirtualMachine {
         return this.mem.heapGetEnvironmentValue(env, pos);
     }
     run() {
-        while (this.instructions[this.programCounter].kind !== 'DONE') {
-            const instruction = this.instructions[this.programCounter];
-            this.execute(instruction);
-            this.programCounter++;
+        try {
+            while (this.instructions[this.programCounter].kind !== 'DONE') {
+                const instruction = this.instructions[this.programCounter];
+                this.execute(instruction);
+                this.programCounter++;
+            }
+        }
+        catch (e) {
+            console.error('The above led to a runtime error.');
+            process.exit(1);
         }
         // return the top of the runtime stack
         return this.mem.addressToTsValue(this.lastPopped);
@@ -69,8 +75,14 @@ class VirtualMachine {
         const val1 = this.mem.addressToTsValue(arg2);
         const val2 = this.mem.addressToTsValue(arg1);
         const microcode = this.binopMicrocode[op];
-        const result = microcode(val1, val2);
-        return this.mem.TsValueToAddress(result);
+        try {
+            const result = microcode(val1, val2);
+            return this.mem.TsValueToAddress(result);
+        }
+        catch (e) {
+            console.error(`Error applying binop ${op} to ${val1} and ${val2}`);
+            throw e;
+        }
     }
     execute(instruction) {
         // console.log(`Executing ${instruction.kind}`)

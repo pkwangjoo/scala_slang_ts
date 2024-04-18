@@ -20,8 +20,7 @@ export class VirtualMachine {
   private lastPopped: any
 
   private globalEnvironment: Environment = {
-    frames: [
-    ],
+    frames: [],
   }
 
   constructor(private instrs: Instruction[]) {
@@ -39,10 +38,15 @@ export class VirtualMachine {
   }
 
   run(): any {
-    while (this.instructions[this.programCounter].kind !== 'DONE') {
-      const instruction = this.instructions[this.programCounter]
-      this.execute(instruction)
-      this.programCounter++
+    try {
+      while (this.instructions[this.programCounter].kind !== 'DONE') {
+        const instruction = this.instructions[this.programCounter]
+        this.execute(instruction)
+        this.programCounter++
+      }
+    } catch (e) {
+      console.error('The above led to a runtime error.')
+      process.exit(1)
     }
     // return the top of the runtime stack
     return this.mem.addressToTsValue(this.lastPopped)
@@ -55,7 +59,8 @@ export class VirtualMachine {
     if (op === '-') {
       return this.mem.TsValueToAddress(-this.mem.addressToTsValue(arg))
     }
-    throw new Error('Not implemented')
+    console.error(`Unary operator not implemented: ${op}`)
+    throw new Error()
   }
 
   binopMicrocode: BinopMicrocode = {
@@ -86,8 +91,13 @@ export class VirtualMachine {
     const val1 = this.mem.addressToTsValue(arg2)
     const val2 = this.mem.addressToTsValue(arg1)
     const microcode = this.binopMicrocode[op]
-    const result = microcode(val1, val2)
-    return this.mem.TsValueToAddress(result)
+    try {
+      const result = microcode(val1, val2)
+      return this.mem.TsValueToAddress(result)
+    } catch (e) {
+      console.error(`Error applying binop ${op} to ${val1} and ${val2}`)
+      throw e
+    }
   }
 
   execute(instruction: Instruction) {
@@ -102,6 +112,7 @@ export class VirtualMachine {
         instruction.pos
       )
       if (this.mem.getTag(val) === MemoryManager.Unassigned_tag) {
+        console.error(`Access of unassigned variable at position ${instruction.pos}`)
         throw new Error('access of unassigned variable')
       }
       this.operandStack.push(val)
@@ -212,6 +223,7 @@ export class VirtualMachine {
       return
     }
 
-    throw new Error(`Not implemented: ${instruction.kind}`)
+    console.error(`Not implemented: ${instruction.kind}`)
+    throw new Error()
   }
 }
