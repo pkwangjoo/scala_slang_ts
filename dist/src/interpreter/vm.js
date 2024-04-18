@@ -69,7 +69,8 @@ class VirtualMachine {
         if (op === '-') {
             return this.mem.TsValueToAddress(-this.mem.addressToTsValue(arg));
         }
-        throw new Error('Not implemented');
+        console.error(`Unary operator not implemented: ${op}`);
+        throw new Error();
     }
     applyBinop(op, arg1, arg2) {
         const val1 = this.mem.addressToTsValue(arg2);
@@ -93,6 +94,7 @@ class VirtualMachine {
         if (instruction.kind === 'LD') {
             const val = this.mem.heapGetEnvironmentValue(this.environment, instruction.pos);
             if (this.mem.getTag(val) === memoryManager_1.MemoryManager.Unassigned_tag) {
+                console.error(`Access of unassigned variable at position ${instruction.pos}`);
                 throw new Error('access of unassigned variable');
             }
             this.operandStack.push(val);
@@ -108,7 +110,7 @@ class VirtualMachine {
         }
         if (instruction.kind === 'JOF') {
             if (this.popOperand() === this.mem.False) {
-                this.programCounter = instruction.addr;
+                this.programCounter = instruction.addr - 1; // -1 because we increment it at the end of the loop
             }
             return;
         }
@@ -182,7 +184,8 @@ class VirtualMachine {
             this.programCounter = newProgramCounter;
             return;
         }
-        throw new Error(`Not implemented: ${instruction.kind}`);
+        console.error(`Not implemented: ${instruction.kind}`);
+        throw new Error();
     }
 }
 exports.VirtualMachine = VirtualMachine;

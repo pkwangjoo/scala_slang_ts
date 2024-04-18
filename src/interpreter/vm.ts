@@ -134,7 +134,7 @@ export class VirtualMachine {
     }
     if (instruction.kind === 'JOF') {
       if (this.popOperand() === this.mem.False) {
-        this.programCounter = instruction.addr
+        this.programCounter = instruction.addr - 1 // -1 because we increment it at the end of the loop
       }
       return
     }
