@@ -1,5 +1,4 @@
 import { parse } from '../parser/parser'
-import { allTests } from '../tests/ivan-tests'
 import { compileIntoVML } from './compiler'
 import { type_of, typecheck } from './typechecker'
 import { VirtualMachine } from './vm'
@@ -18,31 +17,6 @@ function runWithFile(filePath: string) {
   } catch (error) {
     console.error('Error:', error)
     process.exit(1)
-  }
-}
-
-// Separate test logic into a function
-function runTests() {
-  const tests = allTests
-  // Run each test
-  for (let i = 0; i < tests.length; i++) {
-    console.log('===== Running test: ', tests[i]['name'])
-    try {
-      const res = runWithFile(tests[i]['test'])
-      if (res === tests[i]['expected']) {
-        console.log(`===== Test ${tests[i]['name']} passed`)
-      } else {
-        console.log(
-          `===== Test ${tests[i]['name']} failed: expected ${tests[i]['expected']} but got ${res}`
-        )
-      }
-    } catch (e) {
-      if (e === tests[i]['expected']) {
-        console.log(`===== Test ${tests[i]['name']} passed`)
-      } else {
-        throw e
-      }
-    }
   }
 }
 
