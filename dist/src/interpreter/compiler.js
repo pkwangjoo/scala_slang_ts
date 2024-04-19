@@ -16,8 +16,7 @@ const compile_time_environment_extend = (vs, e) => {
 };
 const value_index = (frame, x) => {
     if (!frame) {
-        console.error(`Compile error: Tried to access undeclared name.`);
-        process.exit(1);
+        throw new Error(`Compile error: Tried to access undeclared name.`);
     }
     for (let i = 0; i < frame.length; i++) {
         if (frame[i] === x)

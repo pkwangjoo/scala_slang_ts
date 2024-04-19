@@ -45,8 +45,7 @@ export class VirtualMachine {
         this.programCounter++
       }
     } catch (e) {
-      console.error('The above led to a runtime error.')
-      process.exit(1)
+      throw new Error('Runtime Error: ' + e)
     }
     // return the top of the runtime stack
     return this.mem.addressToTsValue(this.lastPopped)

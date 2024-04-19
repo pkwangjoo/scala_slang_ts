@@ -116,9 +116,8 @@ export const testHigherOrder = {
   def add(x: int, y: int) = {
     return x + y;
   }
-  val apply = (f, x, y) => {
-    return f(x, y);
-  };
+  val apply = (f, x, y) => f(x, y);
+
   val result = apply(add, 3, 5);
 `,
   expected: 8
