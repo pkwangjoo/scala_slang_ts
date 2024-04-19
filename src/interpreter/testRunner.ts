@@ -1,7 +1,7 @@
 import { parse } from '../parser/parser'
 import { allTests } from '../tests/allTests'
 import { compileIntoVML } from './compiler'
-import { typecheck } from './typechecker'
+import { infer_type_of_ast } from './type-inferencer'
 import { VirtualMachine } from './vm'
 
 function run(program: string) {
@@ -9,6 +9,7 @@ function run(program: string) {
     // Read the contents of the file synchronously
     const ast = parse(program)
     // typecheck(ast) // ! TODO uncomment this line
+    infer_type_of_ast(ast);
     const is = compileIntoVML(ast)
     const vm = new VirtualMachine(is)
     return vm.run()
