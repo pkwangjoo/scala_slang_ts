@@ -85,10 +85,8 @@ export class ScalaSlangVisitorInstance
     }
 
     visitBlock(ctx : BlockContext) : BlockStat {
-        console.log("visitblock")
         const stmts = ctx.getRuleContexts(StatContext)
         .map(r => {
-            console.log(r.text)
             return this.visit(r) as Statement
         });
         return {
@@ -137,7 +135,6 @@ export class ScalaSlangVisitorInstance
 
     visitReturnstatement(ctx: ReturnstatementContext) : RetStat {
         const expr = this.visit(ctx.expr()) as Expression;
-        console.log(expr);
 
         return {
             kind : "ret",
@@ -221,7 +218,6 @@ export class ScalaSlangVisitorInstance
             return [name, type]
         })
         
-        // console.log(ctx.names().typeDef().map(t => console.log("type in name", t.text)))
 
         const body : BlockStat | Expression = ctx.block() 
             ? this.visit(ctx.block()!) as BlockStat
