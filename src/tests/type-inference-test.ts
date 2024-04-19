@@ -1,6 +1,6 @@
 
 
-import { infer_type_of_ast } from "../interpreter/typechecker"
+import { infer_type_of_ast } from "../interpreter/type-inferencer"
 import { parse } from "../parser/parser"
 
 

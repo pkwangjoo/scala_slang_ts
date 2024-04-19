@@ -1,7 +1,6 @@
 import { parse } from "../parser/parser";
 import { test_case_5 } from "../tests/parser-test";
 import { compileIntoVML } from "./compiler";
-import { type_of, typecheck } from "./typechecker";
 import { VirtualMachine } from "./vm";
 import { test1, test2, test3, test4 } from "../tests/tests";
 import { allTests } from "../tests/ivan-tests";
