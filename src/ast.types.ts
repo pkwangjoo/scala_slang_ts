@@ -1,3 +1,10 @@
+type ty = TyInt | TyBool | TyArr | string; // the string is for type variables
+
+type TyInt = "int"
+type TyBool = "bool"
+type TyUnit = "unit"
+type TyArr = [ty, ty]
+
 
 type Name = {
     kind: "name";
@@ -30,8 +37,7 @@ type BinLogExpr = {
 
 type LambdaExpr = {
     kind: "lambda"
-    params : string[]
-    formal_types : ty[]
+    formals: [[string, (ty | undefined)]]
     body : BlockStat | Expression
 }
 
@@ -123,28 +129,7 @@ type TerminalAstNode = {
 
 
 
-// DO NOT CHANGE! FOR TYPE CHECKING
-// type term = TmInt | TmIf | TmBool | TmAbs | TmApp | "unit";
 
-type ty = TyInt | TyBool | TyArr | string;
-
-type TyInt = "int"
-type TyBool = "bool"
-type TyUnit = "unit"
-type TyArr = [ty, ty]
-
-["bool", "bool"] as ty
-[["bool", "bool"], ["bool", "bool"]] as ty
-[[["bool", "bool"], ["bool", "bool"]], [["bool", "bool"], ["bool", "bool"]]] as ty
-[[["bool", "bool"], ["bool", "bool"]], [[["bool", "bool"], ["bool", "bool"]], [["bool", "bool"], ["bool", "bool"]]]] as ty
-
-// HOORAY IT WORKS!!!!
-
-// type TmInt = ["TmInt", number];
-// type TmBool = ["TmBool", boolean];
-// type TmIf = ["TmIf", term, term, term];
-// type TmAbs = ["TmAbs", string, ty, term];
-// type TmApp = ["TmApp", term, term];
 
 
 type AstNode = Expression | Statement | Sequence | TerminalAstNode

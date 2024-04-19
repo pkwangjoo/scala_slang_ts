@@ -34,21 +34,25 @@ absTypeDef : simpleTypeDef '->' typeDef
     ;
 
 
-names:  (ID (':' typeDef)?)? | (ID (':' typeDef)? (',' ID (':' typeDef)? )*)
+names:  (nameAndType)? | (nameAndType (',' nameAndType)*)
     ;
+
+nameAndType : ID (':' typeDef)?
+    ;   
+
 
 exprs:  expr | (expr (',' expr)*)
     ;
 
 expr:   expr op=BINOP expr                      #binopexpr 
     |   expr op=BINLOGOP expr                   #binlogopexpr
-    |   val=INT                                 #intlit
-    |   bool=BOOL                               #boollit
-    |   name=ID                                 #name
     |   '(' expr ')'                            #paranexpr 
     |   '(' names ')' '=>' (block | expr)       #lambdaexpr
     |   expr '(' exprs ')'                      #funapp
-    |   expr '?' expr ':' expr                  #condexpr
+    |   expr ('?' expr ':' expr)                #condexpr
+    |   val=INT                                 #intlit
+    |   bool=BOOL                               #boollit
+    |   name=ID                                 #name
     ;
 
 

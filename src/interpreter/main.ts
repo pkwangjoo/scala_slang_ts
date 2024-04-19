@@ -1,8 +1,8 @@
 import { parse } from '../parser/parser'
 import { compileIntoVML } from './compiler'
-import { type_of, typecheck } from './typechecker'
 import { VirtualMachine } from './vm'
 import * as fs from 'fs'
+
 
 function runWithFile(filePath: string) {
   try {
