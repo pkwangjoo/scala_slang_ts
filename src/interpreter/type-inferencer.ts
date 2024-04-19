@@ -36,12 +36,10 @@ const GLOBAL_CONSTRAINTS_MAP = {
 }
 
 
-
 const isTypeVariable = (t : ty) => {
     if (Array.isArray(t)) { // of TyArr
         return false;
     }
-
     return t !== "int" && t!== "bool" && t !== "unit";
 }
 
@@ -103,12 +101,9 @@ seq : (comp : Sequence, env) => {
         const {name, expr} = curr as AssignmentStat
 
         const [tyCurr, cCurr] = infer_type(pickFresh)(expr, env);
-
         // then we have to generalise
-
         const generalise = (t : ty) : (tyScheme | ty) => {
             // we just generalise all the occuring variables here...
-            // TODO, we should not
 
 
             const collectTypeVar = (t : ty) : string[] => {
@@ -138,9 +133,6 @@ seq : (comp : Sequence, env) => {
         const infTy = solve_for_type(tyCurr, ss);
 
         const extendedTe = extend_type_environment([name, generalise(infTy)], env);
-        
-        // Delete this, just for debugging
-        generalise(tyCurr);
 
         const [tyRest, cRest] = seq_aux(stmts.slice(1), "unit", extendedTe);
 
@@ -217,7 +209,6 @@ name : (comp: Name, env) => {
     const isTyScheme = Array.isArray(tyFound) && tyFound[0] === "tyscheme"
     if (isTyScheme) {
         // instantiate
-
         const quantifier = tyFound[1] as string[];
 
         const instantiatedVar = quantifier.map(q => [pickFresh(), q]) as substitution[];
@@ -240,7 +231,6 @@ name : (comp: Name, env) => {
         constraints
         ];
 
-
 },
 
 
@@ -262,9 +252,7 @@ lambda : (comp : LambdaExpr, env) : tyWithConstraints => {
         const dom = fn[0];
         const range = fn[1];
         const domSym = dom[0];
-        const domTy = dom[1] === undefined 
-            ? pickFresh() 
-            : dom[1]; 
+        const domTy = pickFresh()
 
         const extendedTe = extend_type_environment([domSym, domTy] ,env);
 
@@ -291,18 +279,13 @@ funapp : (comp : FunAppExpr, env) : tyWithConstraints=> {
 
     const {fun, args} = comp;
 
-
     const funapp_aux = (tyFun, cFun, args) => {
-
         if (args.length === 0) {
             return [tyFun, cFun]
         }
-
         const curr = args[0]
         const resTy = pickFresh()
         const [tyArg, cArg] = infer_type(pickFresh)(curr, env);
-
-        
 
         const resC = [
             ...cFun, 
@@ -310,10 +293,7 @@ funapp : (comp : FunAppExpr, env) : tyWithConstraints=> {
             [tyFun, [tyArg, resTy]]
         ]
 
-
         return funapp_aux(resTy, resC, args.slice(1));
-
-
     }
 
     const [tyFun, cFun] = infer_type(pickFresh)(fun, env);
@@ -336,7 +316,6 @@ cond : (comp: IfStat, env) : tyWithConstraints=> {
     const [tyPred, cPred] = infer_type(pickFresh)(pred, env);
     const [tyConseq, cConseq] = infer_type(pickFresh)(conseq, env);
     const [tyAlt, cAlt] = infer_type(pickFresh)(alt, env);
-
 
     // get all the constraints from pred, conseq and alt, and enforce new constraints 
    
@@ -406,7 +385,7 @@ const unify = (cs: constraint[]) : substitution[] => {
     const rest = cs.slice(1);
 
     const left = curr[0];
-    const right = curr[1]
+    const right = curr[1];
 
     if (isTypeEqual(left, right)) {
         return unify(rest)
@@ -457,12 +436,12 @@ const unify = (cs: constraint[]) : substitution[] => {
     if (Array.isArray(left) && Array.isArray(right)) {
         const leftDom = left[0];
         const rightDom = right[0];
-        const leftRange = left[1];
-        const rightRange = right[1];
+        const leftCoDom = left[1];
+        const rightCoDom = right[1];
         return unify(
             [
                 [leftDom, rightDom],
-                [leftRange, rightRange],
+                [leftCoDom, rightCoDom],
                  ...rest
             ]);
 
