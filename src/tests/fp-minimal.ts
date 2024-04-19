@@ -252,6 +252,73 @@ export const fp_min_tc_inf_8 = () => {
 
 };
 
+const tc_inf_9 =  `
+{
+val a = 3;
+val b = (x) => x;
+val c = b(a);
+c;
+val d = 4;
+}
+
+
+`
+export const fp_min_tc_inf_9 = () => {
+    const ast = parse(tc_inf_9);
+    const comp = ast;
+    try {
+        console.log(comp)
+        infer_type_of_ast(comp);
+        
+        console.log(tc_inf_9)
+        console.log(`Pass with type ${infer_type_of_ast(comp)}`)
+        return true;
+    } catch (error) {
+        console.log(tc_inf_9)
+        console.log("fail " + error)
+        return false; 
+    }
+
+};
+
+const tc_inf_10 =  `
+{
+val a = 3;
+val b = (x) => x;
+val c = b(a);
+c;
+
+if true {
+    4;
+    5;
+} else {
+    1; 
+    val aa = 33;
+    aa;
+}
+
+}
+
+
+`
+export const fp_min_tc_inf_10 = () => {
+    const ast = parse(tc_inf_10);
+    const comp = ast;
+    try {
+        console.log(comp)
+        infer_type_of_ast(comp);
+        
+        console.log(tc_inf_10)
+        console.log(`Pass with type ${infer_type_of_ast(comp)}`)
+        return true;
+    } catch (error) {
+        console.log(tc_inf_10)
+        console.log("fail " + error)
+        return false; 
+    }
+
+};
+
 
 
 // Util functions
