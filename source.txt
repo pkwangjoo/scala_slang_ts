@@ -1,9 +1,8 @@
-def add(x: Int, y: Int) = {
-  if (x == 0) {
-      return y;
-  } else {
-      return add(x - 1, y + 1);
-  }
+def add(x, y) = {
+    return y == 0
+           ? x
+           : add(x + 1, y - 1);
 }
-val result = add(3, 5);
-result;
+
+val temp = add(3, 5);
+(temp < 9) && (temp > 7);

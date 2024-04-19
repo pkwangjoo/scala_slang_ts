@@ -254,7 +254,7 @@ export const allTests = [
   testMultipleAssignment,
   testBlockDeclarations,
   testFunctionDefinition,
-  // testFunctionRecursive,
+  testFunctionRecursive,
   testFunctionNested,
   testLambdaExpression,
   testLambdaExpressionNested,

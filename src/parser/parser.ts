@@ -27,7 +27,7 @@ export const parse = (progString : string) : AstNode => {
       return visitor.visit(tree) as AstNode;
     } catch (e) {
       console.error("The above led to a parsing error.");
-      process.exit(1);
+      throw e;
     }
 }
 
