@@ -52,6 +52,7 @@ const compile_sequence = (seq: Sequence, ce: any) => {
         return instrs[wc++] = {kind: "LDC", val: undefined}
     let first = true
     for (let comp of seq.stmts) {
+      if (comp.kind === "terminal") return
         first ? first = false
                 : instrs[wc++] = {kind: 'POP'}
         compile(comp, ce)
@@ -133,7 +134,7 @@ const compile_comp: CompileFunctions = {
             compile(comp.body,
     		        compile_time_environment_extend(
     		            comp.formals.map(f => f[0]), ce))
-            instrs[wc++] = {kind: 'LDC', val: undefined}
+            // instrs[wc++] = {kind: 'LDC', val: undefined}
             instrs[wc++] = {kind: 'RESET'}
             instrs[slot_for_GOTO] = {kind: "GOTO", addr: wc}
         },

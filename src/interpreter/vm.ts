@@ -44,11 +44,14 @@ export class VirtualMachine {
         this.execute(instruction)
         this.programCounter++
       }
+      // return undefined if operand stack is empty
+      if (this.operandStack.length === 0) {
+        return undefined
+      }
+      return this.mem.addressToTsValue(this.popOperand())
     } catch (e) {
       throw new Error('Runtime Error: ' + e)
     }
-    // return the top of the runtime stack
-    return this.mem.addressToTsValue(this.lastPopped)
   }
 
   private applyUnop(op: string, arg: any): any {
