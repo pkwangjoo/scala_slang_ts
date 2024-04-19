@@ -20,9 +20,7 @@ export class VirtualMachine {
   private lastPopped: any
 
   private globalEnvironment: Environment = {
-    frames: [
-      // TODO: Add built-in functions to the global environment
-    ],
+    frames: [],
   }
 
   constructor(private instrs: Instruction[]) {
@@ -40,10 +38,14 @@ export class VirtualMachine {
   }
 
   run(): any {
-    while (this.instructions[this.programCounter].kind !== 'DONE') {
-      const instruction = this.instructions[this.programCounter]
-      this.execute(instruction)
-      this.programCounter++
+    try {
+      while (this.instructions[this.programCounter].kind !== 'DONE') {
+        const instruction = this.instructions[this.programCounter]
+        this.execute(instruction)
+        this.programCounter++
+      }
+    } catch (e) {
+      throw new Error('Runtime Error: ' + e)
     }
     // return the top of the runtime stack
     return this.mem.addressToTsValue(this.lastPopped)
@@ -56,7 +58,8 @@ export class VirtualMachine {
     if (op === '-') {
       return this.mem.TsValueToAddress(-this.mem.addressToTsValue(arg))
     }
-    throw new Error('Not implemented')
+    console.error(`Unary operator not implemented: ${op}`)
+    throw new Error()
   }
 
   binopMicrocode: BinopMicrocode = {
@@ -87,8 +90,13 @@ export class VirtualMachine {
     const val1 = this.mem.addressToTsValue(arg2)
     const val2 = this.mem.addressToTsValue(arg1)
     const microcode = this.binopMicrocode[op]
-    const result = microcode(val1, val2)
-    return this.mem.TsValueToAddress(result)
+    try {
+      const result = microcode(val1, val2)
+      return this.mem.TsValueToAddress(result)
+    } catch (e) {
+      console.error(`Error applying binop ${op} to ${val1} and ${val2}`)
+      throw e
+    }
   }
 
   execute(instruction: Instruction) {
@@ -103,6 +111,7 @@ export class VirtualMachine {
         instruction.pos
       )
       if (this.mem.getTag(val) === MemoryManager.Unassigned_tag) {
+        console.error(`Access of unassigned variable at position ${instruction.pos}`)
         throw new Error('access of unassigned variable')
       }
       this.operandStack.push(val)
@@ -123,8 +132,8 @@ export class VirtualMachine {
       return
     }
     if (instruction.kind === 'JOF') {
-      if (this.popOperand() === MemoryManager.False_tag) {
-        this.programCounter = instruction.addr
+      if (this.popOperand() === this.mem.False) {
+        this.programCounter = instruction.addr - 1 // -1 because we increment it at the end of the loop
       }
       return
     }
@@ -135,7 +144,6 @@ export class VirtualMachine {
     if (instruction.kind === 'CALL') {
       const arity = instruction.arity
       const fun = this.operandStack.slice(-arity - 1)[0]
-      // TODO: handle any built-in functions
       const newProgramCounter = this.mem.heapGetClosurePc(fun)
       const newFrame = this.mem.heapAllocateFrame(arity)
       for (let i = arity - 1; i >= 0; i--) {
@@ -214,6 +222,7 @@ export class VirtualMachine {
       return
     }
 
-    throw new Error(`Not implemented: ${instruction.kind}`)
+    console.error(`Not implemented: ${instruction.kind}`)
+    throw new Error()
   }
 }

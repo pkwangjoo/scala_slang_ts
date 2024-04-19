@@ -1,3 +1,8 @@
+interface MemoryBlock {
+  address: number
+  value: string | number
+  children?: MemoryBlock[]
+}
 export class MemoryManager {
   private heap: DataView
   private wordSize: number
@@ -15,22 +20,25 @@ export class MemoryManager {
   static Closure_tag: number = 8
   static Frame_tag: number = 9
   static Environment_tag: number = 10
-  // static Pair_tag: number = 11;
-  static Builtin_tag: number = 12
 
-  private True: number;
-  private False: number;
-  private Null: number;
-  private Undefined: number;
-  private Unassigned: number;
+  True: number
+  False: number
+  Null: number
+  Undefined: number
+  Unassigned: number
 
-  isFalse = (address: number): boolean => this.getTag(address) === MemoryManager.False_tag
-  isTrue = (address: number): boolean => this.getTag(address) === MemoryManager.True_tag
-  isBoolean = (address: number): boolean => this.isFalse(address) || this.isTrue(address)
-  isNull = (address: number): boolean => this.getTag(address) === MemoryManager.Null_tag
-  isUndefined = (address: number): boolean => this.getTag(address) === MemoryManager.Undefined_tag
-  isUnassigned = (address: number): boolean => this.getTag(address) === MemoryManager.Unassigned_tag
-
+  isFalse = (address: number): boolean =>
+    this.getTag(address) === MemoryManager.False_tag
+  isTrue = (address: number): boolean =>
+    this.getTag(address) === MemoryManager.True_tag
+  isBoolean = (address: number): boolean =>
+    this.isFalse(address) || this.isTrue(address)
+  isNull = (address: number): boolean =>
+    this.getTag(address) === MemoryManager.Null_tag
+  isUndefined = (address: number): boolean =>
+    this.getTag(address) === MemoryManager.Undefined_tag
+  isUnassigned = (address: number): boolean =>
+    this.getTag(address) === MemoryManager.Unassigned_tag
 
   constructor(bytes: number, wordSize: number = 8) {
     // console.log("MemoryManager", bytes, wordSize)
@@ -120,16 +128,6 @@ export class MemoryManager {
 
   heapSet2BytesAtOffset(address: number, offset: number, value: number): void {
     this.heap.setUint16(address * this.wordSize + offset, value)
-  }
-
-  isBuiltIn(address: number): boolean {
-    return this.getTag(address) === MemoryManager.Builtin_tag
-  }
-
-  heapAllocateBuiltin(id: number): number {
-    const address = this.heapAllocate(MemoryManager.Builtin_tag, 1)
-    this.heapSetByteAtOffset(address, 1, id)
-    return address
   }
 
   heapGetBuiltinId(address: number): number {
@@ -222,8 +220,8 @@ export class MemoryManager {
 
   heapEnvironmentExtend(frameAddress: number, envAddress: number): number {
     const oldSize = this.heapGetSize(envAddress)
-    const newEnvAddress = this.heapAllocateEnvironment(oldSize);
-    let i;
+    const newEnvAddress = this.heapAllocateEnvironment(oldSize)
+    let i
     for (i = 0; i < oldSize - 1; i++) {
       this.heapSetChild(newEnvAddress, i, this.heapGetChild(envAddress, i))
     }
@@ -243,46 +241,116 @@ export class MemoryManager {
 
   addressToTsValue = (x: number): any => {
     if (this.isTrue(x)) {
-        return true;
+      return true
     } else if (this.isFalse(x)) {
-        return false;
+      return false
     } else if (this.isNumber(x)) {
-        return this.heapGet(x + 1);
+      return this.heapGet(x + 1)
     } else if (this.isUndefined(x)) {
-        return undefined;
+      return undefined
     } else if (this.isUnassigned(x)) {
-        return "<unassigned>";
+      return '<unassigned>'
     } else if (this.isNull(x)) {
-        return null;
-    // } else if (isString(x)) {
-    //     return heapGetString(x);
+      return null
     } else if (this.isClosure(x)) {
-        return "<closure>";
-    } else if (this.isBuiltIn(x)) {
-        return "<builtin>";
+      return '<closure>'
     } else {
-        throw new Error("Unknown value at address: " + x);
+      throw new Error('Unknown value at address: ' + x)
     }
-};
+  }
 
-TsValueToAddress = (x: any): number => {
-    if (typeof x === "boolean") {
-        return x ? this.True : this.False;
-    } else if (typeof x === "number") {
-        return this.heapAllocateNumber(x);
-    } else if (typeof x === "undefined") {
-        return this.Undefined;
+  TsValueToAddress = (x: any): number => {
+    if (typeof x === 'boolean') {
+      return x ? this.True : this.False
+    } else if (typeof x === 'number') {
+      return this.heapAllocateNumber(x)
+    } else if (typeof x === 'undefined') {
+      return this.Undefined
     } else if (x === null) {
-        return this.Null;
-    // } else if (typeof x === "string") {
-    //     return heap_allocate_String(x);
-    // } else if (Array.isArray(x)) {
-    //     return heap_allocate_Pair(
-    //         this.TS_value_to_address(x[0]),
-    //         this.TS_value_to_address(x[1])
-    //     );
+      return this.Null
     } else {
-        throw new Error("Unknown JS value: " + x);
+      throw new Error('Unknown JS value: ' + x)
     }
-};
+  }
+
+  visualiseHeap(): MemoryBlock[] {
+    const heapSize = this.free
+    const memoryBlocks: MemoryBlock[] = []
+
+    for (let address = 0; address < heapSize; address++) {
+      const tag = this.getTag(address)
+      let value: string | number = ''
+      let children: MemoryBlock[] | undefined
+
+      switch (tag) {
+        case MemoryManager.False_tag:
+          value = 'False'
+          break
+        case MemoryManager.True_tag:
+          value = 'True'
+          break
+        case MemoryManager.Number_tag:
+          value = this.heapGet(address + 1)
+          break
+        case MemoryManager.Null_tag:
+          value = 'Null'
+          break
+        case MemoryManager.Undefined_tag:
+          value = 'Undefined'
+          break
+        case MemoryManager.Unassigned_tag:
+          value = 'Unassigned'
+          break
+        case MemoryManager.Blockframe_tag:
+          value = 'Blockframe'
+          break
+        case MemoryManager.Callframe_tag:
+          value = 'Callframe'
+          break
+        case MemoryManager.Closure_tag:
+          value = 'Closure'
+          break
+        case MemoryManager.Frame_tag:
+          value = 'Frame'
+          break
+        case MemoryManager.Environment_tag:
+          value = 'Environment'
+          break
+        default:
+          value = '<unknown>'
+          break
+      }
+
+      const block: MemoryBlock = {
+        address,
+        value,
+      }
+
+      if (
+        tag !== MemoryManager.Number_tag &&
+        tag !== MemoryManager.Blockframe_tag
+      ) {
+        const numberOfChildren = this.getNumberOfChildren(address)
+        if (numberOfChildren > 0) {
+          children = []
+          for (let i = 0; i < numberOfChildren; i++) {
+            const childAddress = this.getChild(address, i)
+            const childValue = this.get(childAddress)
+            children.push({
+              address: childAddress,
+              value: childValue,
+            })
+          }
+        }
+      }
+
+      if (children) {
+        block.children = children
+      }
+
+      memoryBlocks.push(block)
+    }
+
+    return memoryBlocks
+  }
 }

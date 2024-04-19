@@ -7,7 +7,6 @@ import { test_case_2 } from "../tests/parser-test";
 import { test_case_3 } from "../tests/parser-test";
 import {ScalaSlangVisitorInstance} from "./ScalaSlangVisitorInstance"
 import { tc_test_1 } from "../tests/parser-test-type-checker";
-import { vm_fn_basic, vm_test_basic } from "../tests/vm-test";
 
 
 
@@ -24,7 +23,12 @@ export const parse = (progString : string) : AstNode => {
     
     let visitor = new ScalaSlangVisitorInstance();
 
-    return visitor.visit(tree) as AstNode;
+    try {
+      return visitor.visit(tree) as AstNode;
+    } catch (e) {
+      console.error("The above led to a parsing error.");
+      process.exit(1);
+    }
 }
 
 

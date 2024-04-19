@@ -1,36 +1,30 @@
-import { parse } from "../parser/parser";
-import { test_case_5 } from "../tests/parser-test";
-import { compileIntoVML } from "./compiler";
-import { VirtualMachine } from "./vm";
-import { test1, test2, test3, test4 } from "../tests/tests";
-import { allTests } from "../tests/ivan-tests";
+import { parse } from '../parser/parser'
+import { compileIntoVML } from './compiler'
+import { VirtualMachine } from './vm'
+import * as fs from 'fs'
 
-function run(program) {
-  const ast = parse(program);
-  // console.log("recevied ast as: ", JSON.stringify(ast as AstNode, null, 2));
-  // disable typechecking by commenting this line
-  // typecheck(ast)
-  const is = compileIntoVML(ast as AstNode);
-  const vm = new VirtualMachine(is);
-  return vm.run();
-}
 
-const tests = allTests;
-for (let i = 0; i < tests.length; i++) {
-  console.log("running test: ", tests[i]['name']);
+function runWithFile(filePath: string) {
   try {
-    const res = run(tests[i]['test']);
-    if (res === tests[i]['expected']) {
-      console.log(`test ${tests[i]['name']} passed`);
-    } else {
-      console.log(`test ${tests[i]['name']} failed: expected ${tests[i]['expected']} but got ${res}`);
-    }
-  } catch (e) {
-    if (e === tests[i]['expected']) {
-      console.log(`test ${tests[i]['name']} passed`);
-    } else {
-      throw e;
-    }
+    // Read the contents of the file synchronously
+    const program = fs.readFileSync(filePath, 'utf8')
+    const ast = parse(program)
+    // Disable typechecking by commenting this line
+    // typecheck(ast) // ! TODO uncomment this line
+    const is = compileIntoVML(ast)
+    const vm = new VirtualMachine(is)
+    return vm.run()
+  } catch (error) {
+    console.error('Error:', error)
+    process.exit(1)
   }
 }
 
+const filePath = process.argv[2]
+if (!filePath) {
+  console.error('Please provide a file path as an argument.')
+  process.exit(1)
+}
+console.log(runWithFile(filePath))
+
+// runTests()

@@ -23,6 +23,9 @@ const compile_time_environment_extend = (vs : any, e : any) => {
 }
 
 const value_index = (frame: any, x: any) => {
+    if (!frame) {
+      throw new Error(`Compile error: Tried to access undeclared name.`)
+    }
     for (let i = 0; i < frame.length; i++) {
       if (frame[i] === x) return i
     }
